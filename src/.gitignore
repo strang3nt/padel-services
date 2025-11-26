@@ -1,0 +1,6 @@
+/subprojects/*
+!/subprojects/*.wrap
+/builddir
+
+/.vscode
+.env
