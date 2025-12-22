@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Rodeo Padel Tournament Schedule</title>
+  <meta charset="UTF-8">
+  <style>
+    /* General Setup */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .schedule-container {
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 10px;
+    }
+
+    /* Headers */
+    h1 {
+      text-align: center;
+      color: #007bff;
+      border-bottom: 3px solid #007bff;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      color: #555;
+      border-left: 5px solid #ffc107;
+      padding-left: 10px;
+      margin-top: 40px;
+      margin-bottom: 15px;
+    }
+
+    /* Flex Container for Fields */
+    .field-row-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    /* Individual Field Block (The Table Container) */
+    .field-block {
+      flex: 0 0 calc(33.33% - 14px);
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    /* Match Table Styling */
+    .match-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9em;
+    }
+
+    .match-table th,
+    .match-table td {
+      padding: 8px 5px;
+      border: none;
+      text-align: center;
+    }
+
+    /* Field Header (Campo) */
+    .field-header {
+      background-color: #3f51b5;
+      color: white;
+      font-weight: bold;
+      text-transform: uppercase;
+      padding: 6px;
+      font-size: 1em;
+      text-align: center;
+    }
+
+    /* Table Body Rows */
+    .team-cell {
+      text-align: left;
+      width: 40%;
+      font-weight: 500;
+      font-size: 0.8em;
+    }
+
+    .score-cell {
+      font-weight: bold;
+      color: #dc3545;
+      width: 10%;
+      font-size: 0.8em;
+    }
+
+    .vs-cell {
+      background-color: #f0f0f0;
+      color: #6c757d;
+      font-weight: bold;
+      width: 10%;
+      font-size: 0.8em;
+    }
+
+    /* -------------------------------------------------------------------------------------------------- */
+    /* PRINT OPTIMIZATION CSS: A4 Landscape and Density */
+    /* -------------------------------------------------------------------------------------------------- */
+    @media print {
+
+      /* 1. Set A4 Landscape and minimal margins for the entire page */
+      @page {
+        size: A4 landscape;
+        margin: 0.5cm;
+      }
+
+      /* 2. Remove desktop margins and use smaller container width */
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      .schedule-container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* 3. Reduce vertical spacing on headers */
+      h1 {
+        margin: 0.2cm 0 0.5cm 0;
+        font-size: 1.2em;
+        border-bottom: 2px solid #007bff;
+      }
+
+      h2 {
+        page-break-before: auto;
+        margin: 0.5cm 0 0.2cm 0;
+        font-size: 1.1em;
+        padding-left: 5px;
+      }
+
+      /* 4. Ensure fields and rows stay together */
+      .field-row-container {
+        gap: 5px;
+        margin-bottom: 5px;
+      }
+
+      .field-block {
+        page-break-inside: avoid;
+        flex: 0 0 calc(33.33% - 4px);
+      }
+
+      /* 5. Reduce padding/font size in the tables even further */
+      .match-table th,
+      .match-table td {
+        padding: 3px 2px;
+        font-size: 0.75em;
+      }
+
+      .field-header {
+        padding: 4px;
+        font-size: 0.9em;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="schedule-container">
+    <h1>Rodeo - {{.Tournament.Data}}</h1>
+    {{range .Tournament.Rounds}}
+    <h2>Round {{.RoundNumber}}</h2>
+    {{range .Matches}}
+    <div class="field-row-container">
+      <div class="field-block">
+        <div class="field-header">Court {{.Court}}</div>
+        <table class="match-table">
+          <thead>
+            <tr>
+              <th class="team-cell">Team A</th>
+              <th class="score-cell">Game</th>
+              <th class="vs-cell"></th>
+              <th class="score-cell">Game</th>
+              <th class="team-cell">Team B</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="team-cell">{{.TeamA}}</td>
+              <td class="score-cell">{{.ScoreA}}</td>
+              <td class="vs-cell">VS</td>
+              <td class="score-cell">{{.ScoreB}}</td>
+              <td class="team-cell">{{.TeamB}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {{end}}
+    {{end}}
+  </div>
+</body>
+
+</html>
