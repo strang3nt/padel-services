@@ -1,6 +1,0 @@
-[wrap-git]
-directory = tgbot-cpp
-url = https://github.com/reo7sp/tgbot-cpp.git
-revision = master
-depth = 1
-method = cmake
