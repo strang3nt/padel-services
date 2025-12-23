@@ -23,7 +23,6 @@ const (
 )
 
 type Match struct {
-	DateStart   time.Time
 	TeamA       Team
 	TeamB       Team
 	MatchStatus MatchStatus
