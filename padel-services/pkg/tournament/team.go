@@ -8,13 +8,16 @@ const (
 	Else
 )
 
-type Level int
-
-const (
-	Beginner Level = iota
-	Intermediate
-	Advanced
-)
+func GenderFromString(g string) Gender {
+	switch g {
+	case "Male":
+		return Male
+	case "Female":
+		return Female
+	default:
+		return Else
+	}
+}
 
 type Person struct {
 	Id string
@@ -24,23 +27,20 @@ type Team struct {
 	Person_1   Person
 	Person_2   Person
 	TeamGender Gender
-	TeamLevel  Level
 }
 
-func NewTeam(person1, person2 Person, teamGender Gender, teamLevel Level) *Team {
+func NewTeam(person1, person2 Person, teamGender Gender) *Team {
 	return &Team{
 		Person_1:   person1,
 		Person_2:   person2,
 		TeamGender: teamGender,
-		TeamLevel:  teamLevel,
 	}
 }
 
-func MakeTeam(person1, person2 Person, teamGender Gender, teamLevel Level) Team {
+func MakeTeam(person1, person2 Person, teamGender Gender) Team {
 	return Team{
 		Person_1:   person1,
 		Person_2:   person2,
 		TeamGender: teamGender,
-		TeamLevel:  teamLevel,
 	}
 }
