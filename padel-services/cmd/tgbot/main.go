@@ -235,10 +235,14 @@ func printToPdf(state *map[int64]StateMachine, conn *pgxpool.Pool) bot.HandlerFu
 		msgScanner.Scan()
 		roundsNumber, err := strconv.Atoi(msgScanner.Text())
 		if err != nil {
-			b.SendMessage(ctx, &bot.SendMessageParams{
+			_, err = b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: update.Message.Chat.ID,
 				Text:   "Errore: la seconda riga deve contenere il numero di round da disputare durante il torneo.",
 			})
+			if err != nil {
+				log.Printf("error while sending message: %v", err)
+				return
+			}
 			return
 		}
 
@@ -274,7 +278,12 @@ func printPdf(ctx context.Context, template_data services.TemplateData, b *bot.B
 		return
 	}
 
-	defer os.Remove(pdfFile.Name())
+	defer func() {
+		err := os.Remove(pdfFile.Name())
+		if err != nil {
+			log.Printf("error while removing file: %v", err)
+		}
+	}()
 
 	_, err = b.SendDocument(ctx, &bot.SendDocumentParams{
 		ChatID:   chatId,

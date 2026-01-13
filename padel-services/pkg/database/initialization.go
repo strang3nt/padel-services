@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -21,7 +22,12 @@ func CreateDatabaseTables(ctx context.Context, conn *pgxpool.Pool) error {
 	if err != nil {
 		return fmt.Errorf("unable to begin transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil {
+			log.Printf("error while rolling back transaction: %v", err)
+		}
+	}()
 
 	_, err = tx.Exec(ctx, string(databaseTables))
 	if err != nil {

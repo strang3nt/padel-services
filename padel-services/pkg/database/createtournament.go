@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"padelservices/pkg/tournament"
@@ -87,7 +88,12 @@ func CreateTournament(ctx context.Context, conn *pgxpool.Pool, t *tournament.Tou
 	if err != nil {
 		return fmt.Errorf("error starting transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil {
+			log.Printf("error while rolling back transaction: %v", err)
+		}
+	}()
 
 	tournamentType, err := tournament.TournamentTypeToString((*t).GetTournamentType())
 	if err != nil {

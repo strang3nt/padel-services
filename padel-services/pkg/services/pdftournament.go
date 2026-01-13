@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"log"
 	"os"
 	"os/exec"
 	"padelservices/pkg/tournament"
@@ -45,7 +46,12 @@ func CreatePdfTournament(data TemplateData, templateFileName string) (string, er
 	if err != nil {
 		return "", fmt.Errorf("error executing and saving template: %v", err)
 	}
-	defer os.Remove(tempHTMLFile)
+	defer func() {
+		err := os.Remove(tempHTMLFile)
+		if err != nil {
+			log.Printf("error while removing temp file: %v", err)
+		}
+	}()
 
 	outputFile := "tournament_schedule.pdf"
 
@@ -77,8 +83,13 @@ func executeAndSaveTemplate(tplFilePath string, data TemplateData) (string, erro
 	if err != nil {
 		return "", fmt.Errorf("creating temp file: %w", err)
 	}
-	defer tempFile.Close()
 
+	defer func() {
+		err := tempFile.Close()
+		if err != nil {
+			log.Printf("error while closing temp file: %v", err)
+		}
+	}()
 	if _, err := tempFile.Write(buf.Bytes()); err != nil {
 		return "", fmt.Errorf("writing to temp file: %w", err)
 	}
