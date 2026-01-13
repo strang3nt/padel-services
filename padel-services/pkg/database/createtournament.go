@@ -84,6 +84,7 @@ func queryCreateTournament(ctx context.Context, tx pgx.Tx, tournamentDate time.T
 }
 
 func CreateTournament(ctx context.Context, conn *pgxpool.Pool, t *tournament.Tournament) error {
+	log.Print("creating tournament...")
 	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("error starting transaction: %w", err)
@@ -91,7 +92,7 @@ func CreateTournament(ctx context.Context, conn *pgxpool.Pool, t *tournament.Tou
 	defer func() {
 		err := tx.Rollback(ctx)
 		if err != nil {
-			log.Printf("error while rolling back transaction: %v", err)
+			log.Printf("msg rolling back transaction: %v", err)
 		}
 	}()
 

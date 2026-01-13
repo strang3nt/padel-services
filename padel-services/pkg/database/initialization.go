@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const databaseTablesPath = "resources/sql/create_tables.sql"
-
 func CreateDatabaseTables(ctx context.Context, conn *pgxpool.Pool) error {
 
+	databaseTablesPath := filepath.Join(os.Getenv("PROJECT_ROOT"), "resources", "sql", "create_tables.sql")
 	databaseTables, err := os.ReadFile(databaseTablesPath)
 	if err != nil {
 		return fmt.Errorf("unable to read database tables file: %w", err)

@@ -79,7 +79,7 @@ func (rf *RodeoFactory) getMatchesPerTeam(teamsNumber int, totalRounds int, avai
 
 			matchesPerTurn := totalMatchesFloat / float64(totalRounds)
 
-			if matchesPerTurn <= float64(availableCourts) {
+			if matchesPerTurn <= float64(availableCourts) && teamsNumber > matchesPerTeam {
 				return int(totalMatchesFloat), matchesPerTurn, matchesPerTeam
 			}
 		}

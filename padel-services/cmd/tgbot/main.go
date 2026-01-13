@@ -60,7 +60,6 @@ func main() {
 
 	// Register this in your main function after creating the bot instance
 	b.RegisterHandlerMatchFunc(func(update *models.Update) bool {
-		fmt.Println("RegisterHandlerMatchFunc", update)
 		var chatId int64
 		if update.CallbackQuery != nil && update.CallbackQuery.Message.Message != nil {
 			chatId = update.CallbackQuery.Message.Message.Chat.ID
@@ -69,7 +68,6 @@ func main() {
 		} else {
 			return false
 		}
-		fmt.Println("chatId", chatId)
 		if s, ok := state[chatId]; ok && s == TournamentCreated {
 			return true
 		}
@@ -246,8 +244,21 @@ func printToPdf(state *map[int64]StateMachine, conn *pgxpool.Pool) bot.HandlerFu
 			return
 		}
 
-		teams, _ := services.MakeTeamsFromMessage(msgScanner)
+		teams, err := services.MakeTeamsFromMessage(msgScanner)
+		if err != nil {
+			_, err = b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: update.Message.Chat.ID,
+				Text:   fmt.Sprintf("Ho incontrato un errore leggendo le squadre: %v.", err),
+			})
+			if err != nil {
+				log.Printf("error while sending message: %v", err)
+
+			}
+			return
+		}
+		log.Print("creating tournament...")
 		tournament := services.CreateTournament("Rodeo", time.Now(), teams, roundsNumber, availableCourts)
+		log.Print("tournament created")
 		template_data := services.FromTournamentToTemplateData(tournament)
 		err = database.CreateTournament(ctx, conn, &tournament)
 		if err != nil {
