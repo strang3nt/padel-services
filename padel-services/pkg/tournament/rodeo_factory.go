@@ -29,8 +29,12 @@ func (rf *RodeoFactory) MakeTournament(
 	}
 
 	allMatches := rf.makeEdges(nodes, matchesPerTeam)
+	graph := NewGraph()
+	for edge := range allMatches {
+		graph.AddEdge(edge)
+	}
 
-	rounds, err := rf.makeMatchingsBruteForce(allMatches, matchesPerTurn, rf.TotalRounds)
+	rounds, err := rf.makeMatchingsBruteForce(*graph, matchesPerTurn, rf.TotalRounds)
 	if err != nil {
 		return nil, err
 	}
@@ -97,12 +101,6 @@ type matchings []matching
 
 type nodeSet map[int]struct{}
 
-type state struct {
-	buckets          matchings
-	remainingEdges   matching // Set of remaining edges
-	bucketsUsedNodes []nodeSet
-}
-
 type graphState struct {
 	buckets          matchings
 	remainingEdges   Graph // Set of remaining edges
@@ -112,42 +110,6 @@ type graphState struct {
 func (ns nodeSet) contains(node int) bool {
 	_, ok := ns[node]
 	return ok
-}
-
-func removeEdge(m matching, e edge) bool {
-	if _, exists := m[e]; exists {
-		delete(m, e)
-		return true
-	}
-	return false
-}
-
-func copyState(s *state) *state {
-	newState := &state{
-		buckets:          make(matchings, len(s.buckets)),
-		remainingEdges:   make(matching, len(s.remainingEdges)),
-		bucketsUsedNodes: make([]nodeSet, len(s.bucketsUsedNodes)),
-	}
-
-	for i, m := range s.buckets {
-		newState.buckets[i] = make(matching, len(m))
-		for edge := range m {
-			newState.buckets[i][edge] = struct{}{}
-		}
-	}
-
-	for edge := range s.remainingEdges {
-		newState.remainingEdges[edge] = struct{}{}
-	}
-
-	for i, ns := range s.bucketsUsedNodes {
-		newState.bucketsUsedNodes[i] = make(nodeSet, len(ns))
-		for node := range ns {
-			newState.bucketsUsedNodes[i][node] = struct{}{}
-		}
-	}
-
-	return newState
 }
 
 func copyGraphState(s *graphState) *graphState {
@@ -174,7 +136,7 @@ func copyGraphState(s *graphState) *graphState {
 	return newState
 }
 
-func (rf *RodeoFactory) makeMatchingsBruteForceGraph(
+func (rf *RodeoFactory) makeMatchingsBruteForce(
 	initialEdges Graph, avgMatchingSize float64, totalMatchings int) (matchings, error) {
 
 	maxMatchingSize := int(math.Ceil(avgMatchingSize))
@@ -230,73 +192,6 @@ func (rf *RodeoFactory) makeMatchingsBruteForceGraph(
 				nextState.bucketsUsedNodes[i][int(p2)] = struct{}{}
 
 				if !nextState.remainingEdges.RemoveEdge(currentEdge) {
-					return nil, errors.New("edge was not found in remaining_edges during removal")
-				}
-
-				stack = append(stack, nextState)
-			}
-		}
-	}
-
-	return nil, errors.New("could not find valid matchings with the given parameters")
-}
-
-func (rf *RodeoFactory) makeMatchingsBruteForce(
-	initialEdges matching, avgMatchingSize float64, totalMatchings int) (matchings, error) {
-
-	maxMatchingSize := int(math.Ceil(avgMatchingSize))
-
-	var stack []*state
-
-	initialBuckets := make(matchings, totalMatchings)
-	for i := range initialBuckets {
-		initialBuckets[i] = make(matching)
-	}
-
-	initialUsedNodes := make([]nodeSet, totalMatchings)
-	for i := range initialUsedNodes {
-		initialUsedNodes[i] = make(nodeSet)
-	}
-
-	initialState := &state{
-		buckets:          initialBuckets,
-		remainingEdges:   initialEdges,
-		bucketsUsedNodes: initialUsedNodes,
-	}
-
-	stack = append(stack, initialState)
-
-	for len(stack) > 0 {
-
-		currentState := stack[len(stack)-1]
-		stack = stack[:len(stack)-1]
-
-		if len(currentState.remainingEdges) == 0 {
-			return currentState.buckets, nil
-		}
-
-		var currentEdge edge
-		for edge := range currentState.remainingEdges {
-			currentEdge = edge
-			break
-		}
-		p1 := currentEdge.P1
-		p2 := currentEdge.P2
-
-		for i := range totalMatchings {
-			players := currentState.bucketsUsedNodes[i]
-			edgesInMatching := int(len(currentState.buckets[i]))
-
-			if !players.contains(int(p1)) && !players.contains(int(p2)) &&
-				edgesInMatching < maxMatchingSize {
-
-				nextState := copyState(currentState)
-
-				nextState.buckets[i][currentEdge] = struct{}{}
-				nextState.bucketsUsedNodes[i][int(p1)] = struct{}{}
-				nextState.bucketsUsedNodes[i][int(p2)] = struct{}{}
-
-				if !removeEdge(nextState.remainingEdges, currentEdge) {
 					return nil, errors.New("edge was not found in remaining_edges during removal")
 				}
 
@@ -364,7 +259,7 @@ func (rf *RodeoFactory) makeEdges(nodes []int, k int) matching {
 
 	isNGreaterThanK := n > k
 
-	if !(isEvenNK && isNGreaterThanK) {
+	if !isEvenNK || !isNGreaterThanK {
 		return make(matching)
 	}
 

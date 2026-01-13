@@ -11,11 +11,16 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+type tournamentNameType struct {
+	TournamentId   int64
+	TournamentType string
+}
+
 const tournamentsByDateAndType = `
-SELECT tournament.tournament_id
+SELECT tournament.id, tournament_type.name
 FROM tournament
-WHERE CURRENT_DATE(tournament.tournament_date)=CURRENT_DATE($1) AND tournament_type.name=$2
 JOIN tournament_type ON tournament.tournament_type_id=tournament_type.id
+WHERE tournament.tournament_date::date = $1::date
 `
 
 type match struct {
@@ -26,66 +31,70 @@ type match struct {
 
 const matchesByTournamentId = `
 SELECT round_number, team1_id, team2_id
-FROM match, round_tournament
-WHERE round_tournament.tournament_id=$1
+FROM match
 JOIN round_tournament ON match.id=round_tournament.match_id
+WHERE round_tournament.tournament_id=$1
 ORDER BY round_number
 `
 
 type team struct {
-	teamId  int64
-	person1 string
-	person2 string
-	gender  string
+	TeamId  int64
+	Person1 string
+	Person2 string
+	Gender  string
 }
 
 const teamsByTournamentId = `
 SELECT team.id, p1.name, p2.name, gender.name
 FROM team
-WHERE team.id IN (
-	SELECT team1_id
-	FROM match
-	WHERE round_tournament.tournament_id=$1
-	JOIN round_tournament ON match.id=round_tournament.match_id
-	UNION
-	SELECT team2_id
-	FROM match
-	WHERE round_tournament.tournament_id=$1
-	JOIN round_tournament ON match.id=round_tournament.match_id
-)
 JOIN person p1 ON team.person1_id=p1.id
 JOIN person p2 ON team.person2_id=p2.id
 JOIN gender ON team.gender_id=gender.id
+WHERE team.id IN (
+	SELECT team1_id
+	FROM match
+	JOIN round_tournament ON match.id=round_tournament.match_id
+	WHERE round_tournament.tournament_id=$1
+	UNION
+	SELECT team2_id
+	FROM match
+	JOIN round_tournament ON match.id=round_tournament.match_id
+	WHERE round_tournament.tournament_id=$1
+)
 `
 
-func GetTournamentsByDate(ctx context.Context, conn *pgxpool.Pool, tournamentDate time.Time, tournamentType tournament.TournamentType) ([]tournament.TournamentData, error) {
+func GetTournamentsByDate(ctx context.Context, conn *pgxpool.Pool, tournamentDate time.Time) ([]tournament.TournamentData, error) {
 
 	var tournaments []tournament.TournamentData
-	tournamentTypeStr, err := tournament.TournamentTypeToString(tournamentType)
+	rows, err := conn.Query(ctx, tournamentsByDateAndType, tournamentDate)
 	if err != nil {
-		return tournaments, fmt.Errorf("error while processing tournament type: %w", err)
+		return tournaments, fmt.Errorf("query error: %w", err)
 	}
-
-	rows, _ := conn.Query(ctx, tournamentsByDateAndType, tournamentDate, tournamentTypeStr)
-	tournamentIds, err := pgx.CollectRows(rows, pgx.RowTo[int64])
+	tournamentIds, err := pgx.CollectRows(rows, pgx.RowToStructByPos[tournamentNameType])
 	if err != nil {
-		return tournaments, fmt.Errorf("Scan error: %w", err)
+		return tournaments, fmt.Errorf("scan error: %w", err)
 	}
 
 	for _, id := range tournamentIds {
-		rows, err := conn.Query(ctx, matchesByTournamentId, id)
+		rows, err := conn.Query(ctx, matchesByTournamentId, id.TournamentId)
+		if err != nil {
+			return tournaments, fmt.Errorf("query error: %w", err)
+		}
 		matches, err := pgx.CollectRows(rows, pgx.RowToStructByPos[match])
 		if err != nil {
-			return tournaments, fmt.Errorf("CollectRows error: %v", err)
+			return tournaments, fmt.Errorf("collectRows error: %v", err)
 		}
 
-		rows, err = conn.Query(ctx, teamsByTournamentId, id)
+		rows, err = conn.Query(ctx, teamsByTournamentId, id.TournamentId)
+		if err != nil {
+			return tournaments, fmt.Errorf("query error: %w", err)
+		}
 		teams, err := pgx.CollectRows(rows, pgx.RowToStructByPos[team])
 		if err != nil {
-			return tournaments, fmt.Errorf("CollectRows error: %v", err)
+			return tournaments, fmt.Errorf("collectRows error: %v", err)
 		}
 
-		tournaments = append(tournaments, buildTournamentData(tournamentTypeStr, tournamentDate, matches, teams))
+		tournaments = append(tournaments, buildTournamentData(id.TournamentType, tournamentDate, matches, teams))
 
 	}
 
@@ -98,12 +107,12 @@ func buildTournamentData(
 	startDate time.Time,
 	matches []match,
 	teams []team) tournament.TournamentData {
-	var teamsMap map[int64]*tournament.Team
 
-	var matchesMap map[int][]struct {
+	teamsMap := make(map[int64]*tournament.Team)
+	matchesMap := make(map[int][]struct {
 		team1 int64
 		team2 int64
-	}
+	})
 
 	for _, m := range matches {
 		curr, ok := matchesMap[m.RoundNumber]
@@ -126,12 +135,12 @@ func buildTournamentData(
 	teamsResult := make([]tournament.Team, 0)
 
 	for _, t := range teams {
-		person1 := tournament.Person{Id: t.person1}
-		person2 := tournament.Person{Id: t.person2}
+		person1 := tournament.Person{Id: t.Person1}
+		person2 := tournament.Person{Id: t.Person2}
 
-		teamsResult = append(teamsResult, tournament.Team{Person_1: person1, Person_2: person2, TeamGender: tournament.GenderFromString(t.gender)})
+		teamsResult = append(teamsResult, tournament.Team{Person_1: person1, Person_2: person2, TeamGender: tournament.GenderFromString(t.Gender)})
 
-		teamsMap[t.teamId] = &teamsResult[len(teamsResult)-1]
+		teamsMap[t.TeamId] = &teamsResult[len(teamsResult)-1]
 
 	}
 

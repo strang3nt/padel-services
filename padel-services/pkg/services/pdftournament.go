@@ -155,3 +155,38 @@ func FromTournamentToTemplateData(tournament tournament.Tournament) TemplateData
 		},
 	}
 }
+
+func FromTournamentDataToTemplateData(tournament tournament.TournamentData) TemplateData {
+	return TemplateData{
+		Tournament: TournamentData{
+			Data: fmt.Sprintf("%s - Start Date: %s", tournament.Name, tournament.Date.Format("2006-01-02")),
+			Rounds: func() []Round {
+				var rounds []Round
+				for roundIndex, round := range tournament.Rounds {
+					var matches []Match
+					for _, match := range round {
+
+						surnamePerson1TeamA := strings.Split(match.TeamA.Person_1.Id, " ")
+						surnamePerson2TeamA := strings.Split(match.TeamA.Person_2.Id, " ")
+						surnamePerson1TeamB := strings.Split(match.TeamB.Person_1.Id, " ")
+						surnamePerson2TeamB := strings.Split(match.TeamB.Person_2.Id, " ")
+
+						matches = append(matches, Match{
+							Court:       strconv.Itoa(match.CourtId),
+							TeamA:       surnamePerson1TeamA[len(surnamePerson1TeamA)-1] + " & " + surnamePerson2TeamA[len(surnamePerson2TeamA)-1],
+							ScoreA:      "",
+							TeamB:       surnamePerson1TeamB[len(surnamePerson1TeamB)-1] + " & " + surnamePerson2TeamB[len(surnamePerson2TeamB)-1],
+							ScoreB:      "",
+							RoundNumber: roundIndex + 1,
+						})
+					}
+					rounds = append(rounds, Round{
+						RoundNumber: roundIndex + 1,
+						Matches:     matches,
+					})
+				}
+				return rounds
+			}(),
+		},
+	}
+}
