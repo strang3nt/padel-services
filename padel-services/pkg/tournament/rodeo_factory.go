@@ -1,7 +1,9 @@
 package tournament
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"math"
 	"time"
 )
@@ -11,7 +13,42 @@ type RodeoFactory struct {
 	AvailableCourts int
 }
 
+func (rf *RodeoFactory) GetFirstValidTournament(
+	timeout time.Duration,
+	count int,
+	teams []Team,
+	start time.Time,
+) (*Rodeo, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	resultChan := make(chan *Rodeo, count)
+
+	for i := range count {
+		go func(id int) {
+
+			rodeo, err := rf.MakeTournament(ctx, teams, start)
+			if err == nil && rodeo != nil {
+				select {
+				case resultChan <- rodeo:
+				case <-ctx.Done():
+				}
+			}
+		}(i)
+	}
+
+	select {
+	case firstResult := <-resultChan:
+		cancel()
+		return firstResult, nil
+	case <-ctx.Done():
+		return nil, fmt.Errorf("tournament generation failed or timed out: %w", ctx.Err())
+	}
+}
+
 func (rf *RodeoFactory) MakeTournament(
+	ctx context.Context, // Added context
 	teams []Team,
 	dateStart time.Time) (*Rodeo, error) {
 	n := len(teams)
@@ -34,9 +71,15 @@ func (rf *RodeoFactory) MakeTournament(
 		graph.AddEdge(edge)
 	}
 
-	rounds, err := rf.makeMatchingsBruteForce(*graph, matchesPerTurn, rf.TotalRounds)
-	if err != nil {
-		return nil, err
+	var rounds matchings
+	var err error
+	rounds = rf.makeMatchingsHeuristic(*graph, matchesPerTurn, rf.TotalRounds)
+
+	if len(rounds) < rf.TotalRounds {
+		rounds, err = rf.makeMatchingsBruteForce(ctx, *graph, matchesPerTurn, rf.TotalRounds)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var turns []Round
@@ -137,7 +180,7 @@ func copyGraphState(s *graphState) *graphState {
 }
 
 func (rf *RodeoFactory) makeMatchingsBruteForce(
-	initialEdges Graph, avgMatchingSize float64, totalMatchings int) (matchings, error) {
+	ctx context.Context, initialEdges Graph, avgMatchingSize float64, totalMatchings int) (matchings, error) {
 
 	maxMatchingSize := int(math.Ceil(avgMatchingSize))
 
@@ -163,44 +206,111 @@ func (rf *RodeoFactory) makeMatchingsBruteForce(
 
 	for len(stack) > 0 {
 
-		currentState := stack[len(stack)-1]
-		stack = stack[:len(stack)-1]
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+			currentState := stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
 
-		if currentState.remainingEdges.Size() == 0 {
-			return currentState.buckets, nil
-		}
+			if currentState.remainingEdges.Size() == 0 {
+				return currentState.buckets, nil
+			}
 
-		var currentEdge edge
-		for edge := range currentState.remainingEdges.GetEdgesIterator() {
-			currentEdge = edge
-			break
-		}
-		p1 := currentEdge.P1
-		p2 := currentEdge.P2
+			var currentEdge edge
+			for edge := range currentState.remainingEdges.GetEdgesIterator() {
+				currentEdge = edge
+				break
+			}
+			p1 := currentEdge.P1
+			p2 := currentEdge.P2
 
-		for i := range totalMatchings {
-			players := currentState.bucketsUsedNodes[i]
-			edgesInMatching := int(len(currentState.buckets[i]))
+			for i := range totalMatchings {
+				players := currentState.bucketsUsedNodes[i]
+				edgesInMatching := int(len(currentState.buckets[i]))
 
-			if !players.contains(int(p1)) && !players.contains(int(p2)) &&
-				edgesInMatching < maxMatchingSize {
+				if !players.contains(int(p1)) && !players.contains(int(p2)) &&
+					edgesInMatching < maxMatchingSize {
 
-				nextState := copyGraphState(currentState)
+					nextState := copyGraphState(currentState)
 
-				nextState.buckets[i][currentEdge] = struct{}{}
-				nextState.bucketsUsedNodes[i][int(p1)] = struct{}{}
-				nextState.bucketsUsedNodes[i][int(p2)] = struct{}{}
+					nextState.buckets[i][currentEdge] = struct{}{}
+					nextState.bucketsUsedNodes[i][int(p1)] = struct{}{}
+					nextState.bucketsUsedNodes[i][int(p2)] = struct{}{}
 
-				if !nextState.remainingEdges.RemoveEdge(currentEdge) {
-					return nil, errors.New("edge was not found in remaining_edges during removal")
+					if !nextState.remainingEdges.RemoveEdge(currentEdge) {
+						return nil, errors.New("edge was not found in remaining_edges during removal")
+					}
+
+					stack = append(stack, nextState)
 				}
-
-				stack = append(stack, nextState)
 			}
 		}
+
 	}
 
 	return nil, errors.New("could not find valid matchings with the given parameters")
+}
+
+func (rf *RodeoFactory) makeMatchingsHeuristic(
+	graph Graph,
+	avgMatchingSize float64,
+	totalMatchings int,
+) matchings {
+	var res matchings
+	maxMatchesPerTurn := int(math.Ceil(avgMatchingSize))
+
+	playingTeams := make(nodeSet)
+	var turnMatches matching
+
+	for len(res) < totalMatchings {
+		addedSomething := false
+
+		for i := range graph.nodes {
+			neighbors := graph.GetNeighbors(i)
+
+			var player2 Node
+			foundPlayer2 := false
+
+			for _, neighbor := range neighbors {
+				if _, playing := playingTeams[int(neighbor)]; !playing {
+					player2 = neighbor
+					foundPlayer2 = true
+					break
+				}
+			}
+
+			if playingTeams.contains(int(i)) && foundPlayer2 {
+				addedSomething = true
+				player1 := i
+
+				playingTeams[int(player1)] = struct{}{}
+				playingTeams[int(player2)] = struct{}{}
+
+				turnMatches[edge{player1, player2}] = struct{}{}
+
+				graph.RemoveEdge(edge{player1, Node(player2)})
+
+			}
+
+			isLastTurnRequirement := len(res) == totalMatchings-1 && graph.Empty()
+
+			if len(turnMatches) == maxMatchesPerTurn || isLastTurnRequirement {
+				if len(turnMatches) > 0 {
+					res = append(res, turnMatches)
+					playingTeams = make(map[int]struct{})
+					turnMatches = nil
+				}
+			}
+
+		}
+
+		if !addedSomething {
+			break
+		}
+	}
+
+	return res
 }
 
 func (rf *RodeoFactory) addCanonicalEdge(res matching, nodeA int, nodeB int) {

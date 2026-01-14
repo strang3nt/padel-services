@@ -1,6 +1,7 @@
 package tournament
 
 import (
+	"context"
 	"testing"
 	"time"
 )
@@ -30,8 +31,8 @@ func TestMakeMatchingsBruteForceGraph_N6K3(t *testing.T) {
 	for edge := range allMatches {
 		graph.AddEdge(edge)
 	}
-
-	rounds, err := rf.makeMatchingsBruteForce(*graph, matchesPerTurn, totalRounds)
+	ctx := context.Background()
+	rounds, err := rf.makeMatchingsBruteForce(ctx, *graph, matchesPerTurn, totalRounds)
 	if err != nil {
 		t.Fatalf("makeMatchingsBruteForceGraph returned an error: %v", err)
 	}
@@ -102,8 +103,8 @@ func TestMakeTournamentN8K8(t *testing.T) {
 		TotalRounds:     8,
 		AvailableCourts: 5,
 	}
-
-	rodeo, err := rodeoFactory.MakeTournament(teams, dateStart)
+	ctx := context.Background()
+	rodeo, err := rodeoFactory.MakeTournament(ctx, teams, dateStart)
 	if err != nil {
 		t.Fatalf("makeTournament returned an error: %v", err)
 	}
@@ -147,8 +148,8 @@ func TestMakeTournamentN10K8(t *testing.T) {
 		TotalRounds:     8,
 		AvailableCourts: 5,
 	}
-
-	rodeo, err := rodeoFactory.MakeTournament(teams, dateStart)
+	ctx := context.Background()
+	rodeo, err := rodeoFactory.MakeTournament(ctx, teams, dateStart)
 	if err != nil {
 		t.Fatalf("makeTournament returned an error: %v", err)
 	}

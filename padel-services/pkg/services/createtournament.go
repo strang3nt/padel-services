@@ -2,7 +2,9 @@ package services
 
 import (
 	"bufio"
+	"log"
 	"padelservices/pkg/tournament"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -19,8 +21,10 @@ func CreateTournament(
 			TotalRounds:     totalRounds,
 			AvailableCourts: availableCourts,
 		}
-		rodeoInstance, err := rodeo_factory.MakeTournament(teams, dateStart)
+
+		rodeoInstance, err := rodeo_factory.GetFirstValidTournament(10*time.Second, runtime.NumCPU(), teams, dateStart)
 		if err != nil {
+			log.Printf("error while creating tournament: %v", err)
 			return nil
 		}
 
