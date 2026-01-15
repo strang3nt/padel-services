@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"maps"
 	"math"
 	"time"
@@ -81,6 +82,12 @@ func (rf *RodeoFactory) MakeTournament(
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	err = validateTournamentRounds(rounds, teams, rf.TotalRounds, matchesPerTurn, matchesPerTeam)
+	if err != nil {
+		log.Printf("Validation error: %v", err)
+		return nil, err
 	}
 
 	var turns []Round
@@ -411,4 +418,66 @@ func copyMatchings(src matchings) matchings {
 		maps.Copy(dst[i], m)
 	}
 	return dst
+}
+
+func validateTournamentRounds(
+	rounds matchings,
+	teams []Team,
+	totalRounds int,
+	matchesPerTurn float64,
+	matchesPerTeam int) error {
+	if len(rounds) != totalRounds {
+		return fmt.Errorf("expected %d rounds, got %d", totalRounds, len(rounds))
+	}
+
+	for i, round := range rounds {
+		if float64(len(round)) > matchesPerTurn {
+			return fmt.Errorf("round %d violated constraint: expected <= %.1f matches, got %d",
+				i+1, matchesPerTurn, len(round))
+		}
+	}
+
+	scheduledEdges := make(matching)
+	totalScheduledCount := 0
+
+	for i, round := range rounds {
+		for edge := range round {
+			totalScheduledCount++
+			if _, exists := scheduledEdges[edge]; exists {
+				return fmt.Errorf("match scheduled twice: teams %v and %v were scheduled again in round %d",
+					teams[edge.P1], teams[edge.P2], i+1)
+			}
+			scheduledEdges[edge] = struct{}{}
+		}
+	}
+
+	scheduledNodes := make(map[Node]int)
+	for i, round := range rounds {
+
+		scheduledInRound := make(map[Node]struct{})
+		for edge := range round {
+
+			if _, exists := scheduledInRound[edge.P1]; exists {
+				return fmt.Errorf("team %v scheduled more than once across all rounds (found twice in round %d)", teams[edge.P1], i+1)
+			}
+
+			if _, exists := scheduledInRound[edge.P2]; exists {
+				return fmt.Errorf("team %v scheduled more than once across all rounds (found twice in round %d)", teams[edge.P2], i+1)
+			}
+
+			scheduledInRound[edge.P1] = struct{}{}
+			scheduledInRound[edge.P2] = struct{}{}
+			scheduledNodes[edge.P1] += 1
+			scheduledNodes[edge.P2] += 1
+		}
+	}
+
+	for node, count := range scheduledNodes {
+
+		if count != matchesPerTeam {
+			return fmt.Errorf("team %v scheduled %d times, expected %d times", teams[node], count, matchesPerTeam)
+		}
+	}
+
+	return nil
 }
