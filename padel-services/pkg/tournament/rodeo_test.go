@@ -32,7 +32,7 @@ func TestMakeMatchingsBruteForceGraph_N6K3(t *testing.T) {
 		graph.AddEdge(edge)
 	}
 	ctx := context.Background()
-	rounds, err := rf.makeMatchingsBruteForce(ctx, *graph, matchesPerTurn, totalRounds)
+	rounds, err := rf.makeMatchingsBacktracking(ctx, *graph, matchesPerTurn, totalRounds)
 	if err != nil {
 		t.Fatalf("makeMatchingsBruteForceGraph returned an error: %v", err)
 	}

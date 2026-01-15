@@ -53,35 +53,25 @@ func (rodeo *Rodeo) SerializeToCSV() string {
 
 	turns := rodeo.Rounds
 
-	i := 1 // Round counter (C++ used i=1)
+	i := 1
 
-	// Outer loop: Iterate through each Turn (Round)
 	for _, t := range turns {
-		// Start with "Round X,"
+
 		sb.WriteString(fmt.Sprintf("Round %d,", i))
+		match := 1
 
-		match := 1 // Match counter (C++ used match=1)
-
-		// Inner loop: Iterate through each Match in the Turn
 		for _, m := range t {
-			// In Go, since TeamA and TeamB in Match are likely *Team pointers,
-			// we avoid the C++ optional check (.value()) and access them directly.
+
 			team1 := m.TeamA
 			team2 := m.TeamB
 
-			// Match X,
 			sb.WriteString(fmt.Sprintf("Match %d,", match))
-
-			// Team 1 Format: Person1 Name - Person2 Name,
 			sb.WriteString(fmt.Sprintf("%s - %s,", team1.Person_1.Id, team1.Person_2.Id))
-
-			// Team 2 Format: Person1 Name - Person2 Name,
 			sb.WriteString(fmt.Sprintf("%s - %s,", team2.Person_1.Id, team2.Person_2.Id))
 
 			match += 1
 		}
 
-		// Equivalent of std::endl (newline)
 		sb.WriteString("\n")
 		i += 1
 	}

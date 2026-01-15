@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"math"
 	"time"
 )
@@ -76,7 +77,7 @@ func (rf *RodeoFactory) MakeTournament(
 	rounds = rf.makeMatchingsHeuristic(*graph, matchesPerTurn, rf.TotalRounds)
 
 	if len(rounds) < rf.TotalRounds {
-		rounds, err = rf.makeMatchingsBruteForce(ctx, *graph, matchesPerTurn, rf.TotalRounds)
+		rounds, err = rf.makeMatchingsBacktracking(ctx, *graph, matchesPerTurn, rf.TotalRounds)
 		if err != nil {
 			return nil, err
 		}
@@ -144,112 +145,9 @@ type matchings []matching
 
 type nodeSet map[int]struct{}
 
-type graphState struct {
-	buckets          matchings
-	remainingEdges   Graph // Set of remaining edges
-	bucketsUsedNodes []nodeSet
-}
-
 func (ns nodeSet) contains(node int) bool {
 	_, ok := ns[node]
 	return ok
-}
-
-func copyGraphState(s *graphState) *graphState {
-	newState := &graphState{
-		buckets:          make(matchings, len(s.buckets)),
-		remainingEdges:   *s.remainingEdges.GetCopy(),
-		bucketsUsedNodes: make([]nodeSet, len(s.bucketsUsedNodes)),
-	}
-
-	for i, m := range s.buckets {
-		newState.buckets[i] = make(matching, len(m))
-		for edge := range m {
-			newState.buckets[i][edge] = struct{}{}
-		}
-	}
-
-	for i, ns := range s.bucketsUsedNodes {
-		newState.bucketsUsedNodes[i] = make(nodeSet, len(ns))
-		for node := range ns {
-			newState.bucketsUsedNodes[i][node] = struct{}{}
-		}
-	}
-
-	return newState
-}
-
-func (rf *RodeoFactory) makeMatchingsBruteForce(
-	ctx context.Context, initialEdges Graph, avgMatchingSize float64, totalMatchings int) (matchings, error) {
-
-	maxMatchingSize := int(math.Ceil(avgMatchingSize))
-
-	var stack []*graphState
-
-	initialBuckets := make(matchings, totalMatchings)
-	for i := range initialBuckets {
-		initialBuckets[i] = make(matching)
-	}
-
-	initialUsedNodes := make([]nodeSet, totalMatchings)
-	for i := range initialUsedNodes {
-		initialUsedNodes[i] = make(nodeSet)
-	}
-
-	initialState := &graphState{
-		buckets:          initialBuckets,
-		remainingEdges:   initialEdges,
-		bucketsUsedNodes: initialUsedNodes,
-	}
-
-	stack = append(stack, initialState)
-
-	for len(stack) > 0 {
-
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
-			currentState := stack[len(stack)-1]
-			stack = stack[:len(stack)-1]
-
-			if currentState.remainingEdges.Size() == 0 {
-				return currentState.buckets, nil
-			}
-
-			var currentEdge edge
-			for edge := range currentState.remainingEdges.GetEdgesIterator() {
-				currentEdge = edge
-				break
-			}
-			p1 := currentEdge.P1
-			p2 := currentEdge.P2
-
-			for i := range totalMatchings {
-				players := currentState.bucketsUsedNodes[i]
-				edgesInMatching := int(len(currentState.buckets[i]))
-
-				if !players.contains(int(p1)) && !players.contains(int(p2)) &&
-					edgesInMatching < maxMatchingSize {
-
-					nextState := copyGraphState(currentState)
-
-					nextState.buckets[i][currentEdge] = struct{}{}
-					nextState.bucketsUsedNodes[i][int(p1)] = struct{}{}
-					nextState.bucketsUsedNodes[i][int(p2)] = struct{}{}
-
-					if !nextState.remainingEdges.RemoveEdge(currentEdge) {
-						return nil, errors.New("edge was not found in remaining_edges during removal")
-					}
-
-					stack = append(stack, nextState)
-				}
-			}
-		}
-
-	}
-
-	return nil, errors.New("could not find valid matchings with the given parameters")
 }
 
 func (rf *RodeoFactory) makeMatchingsHeuristic(
@@ -426,4 +324,91 @@ func orderTeamsByGender(teams []Team) []Team {
 	}
 
 	return orderedTeams
+}
+
+func (rf *RodeoFactory) makeMatchingsBacktracking(
+	ctx context.Context, initialEdges Graph, avgMatchingSize float64, totalMatchings int) (matchings, error) {
+
+	maxMatchingSize := int(math.Ceil(avgMatchingSize))
+
+	var edgeList []edge
+	for e := range initialEdges.GetEdgesIterator() {
+		edgeList = append(edgeList, e)
+	}
+
+	buckets := make(matchings, totalMatchings)
+	for i := range buckets {
+		buckets[i] = make(matching)
+	}
+
+	usedNodes := make([]nodeSet, totalMatchings)
+	for i := range usedNodes {
+		usedNodes[i] = make(nodeSet)
+	}
+
+	result, success := rf.solveRecursive(ctx, edgeList, 0, buckets, usedNodes, maxMatchingSize)
+
+	if success {
+		return result, nil
+	}
+
+	return nil, errors.New("could not find valid matchings with the given parameters")
+}
+
+func (rf *RodeoFactory) solveRecursive(
+	ctx context.Context,
+	allEdges []edge,
+	edgeIdx int,
+	buckets matchings,
+	usedNodes []nodeSet,
+	maxSize int) (matchings, bool) {
+
+	select {
+	case <-ctx.Done():
+		return nil, false
+	default:
+	}
+
+	if edgeIdx == len(allEdges) {
+		return copyMatchings(buckets), true
+	}
+
+	currentEdge := allEdges[edgeIdx]
+	p1 := int(currentEdge.P1)
+	p2 := int(currentEdge.P2)
+
+	for i := range buckets {
+
+		bucketEdges := buckets[i]
+		nodesInBucket := usedNodes[i]
+
+		if !nodesInBucket.contains(p1) &&
+			!nodesInBucket.contains(p2) &&
+			len(bucketEdges) < maxSize {
+
+			bucketEdges[currentEdge] = struct{}{}
+			nodesInBucket[p1] = struct{}{}
+			nodesInBucket[p2] = struct{}{}
+
+			sol, found := rf.solveRecursive(ctx, allEdges, edgeIdx+1, buckets, usedNodes, maxSize)
+			if found {
+				return sol, true
+			}
+
+			delete(bucketEdges, currentEdge)
+			delete(nodesInBucket, p1)
+			delete(nodesInBucket, p2)
+		}
+	}
+
+	return nil, false
+}
+
+func copyMatchings(src matchings) matchings {
+	dst := make(matchings, len(src))
+	for i, m := range src {
+		dst[i] = make(matching)
+		maps.Copy(dst[i], m)
+	}
+	return dst
 }
