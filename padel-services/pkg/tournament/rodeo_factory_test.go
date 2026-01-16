@@ -2,6 +2,7 @@ package tournament
 
 import (
 	"context"
+	"runtime"
 	"testing"
 	"time"
 )
@@ -13,6 +14,48 @@ func (rf *RodeoFactory) makeEdgesN6K3() matching {
 		{P1: 3, P2: 4}: struct{}{}, {P1: 4, P2: 5}: struct{}{}, {P1: 0, P2: 5}: struct{}{},
 		{P1: 0, P2: 3}: struct{}{}, {P1: 1, P2: 4}: struct{}{}, {P1: 2, P2: 5}: struct{}{},
 	}
+}
+
+func TestMakeMatchesWithGendersSplit(t *testing.T) {
+
+	teams := []Team{
+		{Person_1: Person{Id: "Team1_P1"}, Person_2: Person{Id: "Team1_P2"}, TeamGender: Male},
+		{Person_1: Person{Id: "Team2_P1"}, Person_2: Person{Id: "Team2_P2"}, TeamGender: Male},
+		{Person_1: Person{Id: "Team3_P1"}, Person_2: Person{Id: "Team3_P2"}, TeamGender: Male},
+		{Person_1: Person{Id: "Team4_P1"}, Person_2: Person{Id: "Team4_P2"}, TeamGender: Male},
+		{Person_1: Person{Id: "Team5_P1"}, Person_2: Person{Id: "Team5_P2"}, TeamGender: Male},
+		{Person_1: Person{Id: "Team6_P1"}, Person_2: Person{Id: "Team6_P2"}, TeamGender: Female},
+		{Person_1: Person{Id: "Team7_P1"}, Person_2: Person{Id: "Team7_P2"}, TeamGender: Female},
+		{Person_1: Person{Id: "Team8_P1"}, Person_2: Person{Id: "Team8_P2"}, TeamGender: Female},
+		{Person_1: Person{Id: "Team9_P1"}, Person_2: Person{Id: "Team9_P2"}, TeamGender: Female},
+		{Person_1: Person{Id: "Team10_P1"}, Person_2: Person{Id: "Team10_P2"}, TeamGender: Female},
+	}
+
+	// this configuration should create 5 matches per round, 4 matches per team
+	// thus triggering the gender split logic for tournament creation.
+	rf := RodeoFactory{
+		TotalRounds:     4,
+		AvailableCourts: 5,
+	}
+
+	tournament, err := rf.GetFirstValidTournament(10*time.Second, runtime.NumCPU(), teams, time.Now())
+	if err != nil {
+		t.Fatalf("makeMatchesWithGendersSplit returned an error: %v", err)
+	}
+
+	t.Run("Assertion_1_TournamentIsCorrectlySplitBetweenMaleAndFemale", func(t *testing.T) {
+		for _, round := range tournament.GetRounds() {
+			for _, match := range round {
+				teamA := teams[match.TeamA.TeamGender]
+				teamB := teams[match.TeamB.TeamGender]
+				if teamA.TeamGender != teamB.TeamGender {
+					t.Errorf("Found mixed gender match in a gender split tournament: Team %s (%v) vs Team %s (%v)",
+						teamA.Person_1.Id, teamA.TeamGender, teamB.Person_1.Id, teamB.TeamGender)
+				}
+			}
+		}
+	})
+
 }
 
 func TestMakeMatchingsBruteForceGraph_N6K3(t *testing.T) {

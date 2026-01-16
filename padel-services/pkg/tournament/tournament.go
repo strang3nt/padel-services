@@ -29,11 +29,6 @@ type Match struct {
 	CourtId     int
 }
 
-type TournamentManager interface {
-	ScheduleMatch(roundIndex int, match Match) error
-	GetTournamentDetails() string
-}
-
 type Tournament interface {
 	GetName() string
 	GetDateStart() time.Time

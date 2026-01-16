@@ -167,16 +167,18 @@ rispettando il seguente formato:
 
 <campi disponibili per il torneo>
 <round del torneo>
-<team 1 partecipante 1>, <team 1 partecipante 2>
-<team 2 partecipante 1>, <team 2 partecipante 2>,
+<team 1 partecipante 1>, <team 1 partecipante 2>, <sesso>
+<team 2 partecipante 1>, <team 2 partecipante 2>, <sesso>
 ...
 
+La voce <sesso> può essere "M" o "F", lascia il campo vuoto per indicare squadre miste.
 Ad esempio:
 
 6
 5
-Marco Rossi, Luigi Blu,
-Tizio Caio, Sempro Nio
+Marco Rossi, Luigi Blu, M
+Tizia Caio, Sempro Nio
+Anna Bianchi, Maria Verdi, F 
 `,
 		})
 

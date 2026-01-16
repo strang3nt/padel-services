@@ -50,41 +50,44 @@ func (rf *RodeoFactory) GetFirstValidTournament(
 }
 
 func (rf *RodeoFactory) MakeTournament(
-	ctx context.Context, // Added context
+	ctx context.Context,
 	teams []Team,
 	dateStart time.Time) (*Rodeo, error) {
 	n := len(teams)
-	teams = orderTeamsByGender(teams)
 	nodes := make([]int, n)
 	for i := range n {
 		nodes[i] = i
 	}
 
 	totalMatches, matchesPerTurn, matchesPerTeam :=
-		rf.getMatchesPerTeam(int(n), rf.TotalRounds, rf.AvailableCourts)
+		rf.getMatchesPerTeam(n, rf.TotalRounds, rf.AvailableCourts)
 
 	if totalMatches == 0 {
 		return nil, errors.New("could not determine valid match parameters. Returning empty tournament")
 	}
 
-	allMatches := rf.makeEdges(nodes, matchesPerTeam)
-	graph := NewGraph()
-	for edge := range allMatches {
-		graph.AddEdge(edge)
-	}
+	graph, teams := rf.getGraph(teams, matchesPerTeam)
 
 	var rounds matchings
 	var err error
 	rounds = rf.makeMatchingsHeuristic(*graph, matchesPerTurn, rf.TotalRounds)
 
-	if len(rounds) < rf.TotalRounds {
+	noRoundsAreEmpty := true
+	for _, round := range rounds {
+		if len(round) == 0 {
+			noRoundsAreEmpty = false
+			break
+		}
+	}
+
+	if noRoundsAreEmpty {
 		rounds, err = rf.makeMatchingsBacktracking(ctx, *graph, matchesPerTurn, rf.TotalRounds)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	err = validateTournamentRounds(rounds, teams, rf.TotalRounds, matchesPerTurn, matchesPerTeam)
+	err = validateTournamentRounds(rounds, teams, rf.TotalRounds, matchesPerTurn, totalMatches, matchesPerTeam)
 	if err != nil {
 		log.Printf("Validation error: %v", err)
 		return nil, err
@@ -115,6 +118,69 @@ func (rf *RodeoFactory) MakeTournament(
 	}
 
 	return NewRodeo("Rodeo", dateStart, teams, turns), nil
+}
+
+func (rf *RodeoFactory) getGraph(teams []Team, matchesPerTeam int) (*Graph, []Team) {
+
+	graph := NewGraph()
+	allMatches := make(matching)
+	var teamsOrdered []Team
+
+	if canAllGendersPlayOnlyAgainstEachOther(teams, matchesPerTeam) {
+		teamsSeparatedByGender := make([]Team, 0, len(teams))
+		nodesByGender := make(map[Gender][]int)
+		currNode := 0
+		for _, g := range GetAllGenders() {
+			genderTeams := GetTeamsByGender(teams, g)
+			teamsSeparatedByGender = append(teamsSeparatedByGender, genderTeams...)
+			nodesByGender[g] = make([]int, 0, len(genderTeams))
+			for i := currNode; i < currNode+len(genderTeams); i++ {
+				nodesByGender[g] = append(nodesByGender[g], i)
+			}
+			currNode += len(genderTeams)
+		}
+
+		for _, v := range nodesByGender {
+			for edge := range rf.makeEdges(v, matchesPerTeam) {
+				allMatches[edge] = struct{}{}
+			}
+		}
+		teamsOrdered = teamsSeparatedByGender
+
+	} else {
+		nodes := make([]int, len(teams))
+		for i := range len(teams) {
+			nodes[i] = i
+		}
+		allMatches = rf.makeEdges(nodes, matchesPerTeam)
+		teamsOrdered = orderTeamsByGender(teams)
+	}
+
+	for edge := range allMatches {
+		graph.AddEdge(edge)
+	}
+	return graph, teamsOrdered
+}
+
+func canAllGendersPlayOnlyAgainstEachOther(teams []Team, matchesPerTeam int) bool {
+	genderCounts := make(map[Gender]int)
+
+	for _, g := range GetAllGenders() {
+		genderCounts[g] = 0
+	}
+
+	for _, team := range teams {
+		genderCounts[team.TeamGender] += 1
+	}
+
+	allGendersCanPlayOnlyAgainstEachOther := true
+	for _, n := range genderCounts {
+		if n <= matchesPerTeam {
+			allGendersCanPlayOnlyAgainstEachOther = false
+		}
+	}
+
+	return allGendersCanPlayOnlyAgainstEachOther
 }
 
 func (rf *RodeoFactory) getMatchesPerTeam(teamsNumber int, totalRounds int, availableCourts int) (int, float64, int) {
@@ -300,6 +366,12 @@ func prepend(tms []Team, t Team) []Team {
 	return tms
 }
 
+// Orders the teams in such a way that Female teams are in the middle,
+// surrounded by Else (mixed) teams, and Male teams are at the extremes.
+// This is done to favor teams playing against same gender teams. Note that
+// the ordering is built like this because it leverages some aspects of the
+// the match-making algorithm: teams will be paired against the nearest neighbors
+// to their left and right.
 func orderTeamsByGender(teams []Team) []Team {
 
 	genderBuckets := make(map[Gender][]Team)
@@ -353,7 +425,12 @@ func (rf *RodeoFactory) makeMatchingsBacktracking(
 		usedNodes[i] = make(nodeSet)
 	}
 
-	result, success := rf.solveRecursive(ctx, edgeList, 0, buckets, usedNodes, maxMatchingSize)
+	remainingEdges := make(map[edge]struct{})
+	for _, e := range edgeList {
+		remainingEdges[e] = struct{}{}
+	}
+
+	result, success := rf.solveRecursive(ctx, edgeList, remainingEdges, 0, buckets, usedNodes, maxMatchingSize)
 
 	if success {
 		return result, nil
@@ -365,6 +442,7 @@ func (rf *RodeoFactory) makeMatchingsBacktracking(
 func (rf *RodeoFactory) solveRecursive(
 	ctx context.Context,
 	allEdges []edge,
+	remainingEdges map[edge]struct{},
 	edgeIdx int,
 	buckets matchings,
 	usedNodes []nodeSet,
@@ -381,6 +459,32 @@ func (rf *RodeoFactory) solveRecursive(
 	}
 
 	currentEdge := allEdges[edgeIdx]
+	minOptions := len(buckets) + 1
+
+	// Purpose of the loop: fail quickly. If any edge has no options, backtrack
+	// immediately. Otherwise choose the edge that is the most difficult to place,
+	// in an effor to reduce the branching factor of the search tree.
+	for e := range remainingEdges {
+		options := 0
+		for i := range buckets {
+			if !usedNodes[i].contains(int(e.P1)) && !usedNodes[i].contains(int(e.P2)) && len(buckets[i]) < maxSize {
+				options++
+			}
+		}
+
+		if options == 0 {
+			return nil, false
+		}
+
+		if options < minOptions {
+			minOptions = options
+			currentEdge = e
+		}
+		if minOptions == 1 {
+			break
+		}
+	}
+
 	p1 := int(currentEdge.P1)
 	p2 := int(currentEdge.P2)
 
@@ -397,11 +501,13 @@ func (rf *RodeoFactory) solveRecursive(
 			nodesInBucket[p1] = struct{}{}
 			nodesInBucket[p2] = struct{}{}
 
-			sol, found := rf.solveRecursive(ctx, allEdges, edgeIdx+1, buckets, usedNodes, maxSize)
+			delete(remainingEdges, currentEdge)
+			sol, found := rf.solveRecursive(ctx, allEdges, remainingEdges, edgeIdx+1, buckets, usedNodes, maxSize)
 			if found {
 				return sol, true
 			}
 
+			remainingEdges[currentEdge] = struct{}{}
 			delete(bucketEdges, currentEdge)
 			delete(nodesInBucket, p1)
 			delete(nodesInBucket, p2)
@@ -425,15 +531,18 @@ func validateTournamentRounds(
 	teams []Team,
 	totalRounds int,
 	matchesPerTurn float64,
+	totalMatches int,
 	matchesPerTeam int) error {
 	if len(rounds) != totalRounds {
 		return fmt.Errorf("expected %d rounds, got %d", totalRounds, len(rounds))
 	}
 
+	maxMatchesPerTurn := int(math.Ceil(matchesPerTurn))
+
 	for i, round := range rounds {
-		if float64(len(round)) > matchesPerTurn {
-			return fmt.Errorf("round %d violated constraint: expected <= %.1f matches, got %d",
-				i+1, matchesPerTurn, len(round))
+		if len(round) > maxMatchesPerTurn {
+			return fmt.Errorf("round %d violated constraint: expected <= %d matches, got %d",
+				i+1, maxMatchesPerTurn, len(round))
 		}
 	}
 
@@ -449,6 +558,11 @@ func validateTournamentRounds(
 			}
 			scheduledEdges[edge] = struct{}{}
 		}
+	}
+
+	if totalScheduledCount != totalMatches {
+		return fmt.Errorf("not every match was scheduled: total scheduled count %d does not match total matches %d",
+			totalScheduledCount, totalMatches)
 	}
 
 	scheduledNodes := make(map[Node]int)
