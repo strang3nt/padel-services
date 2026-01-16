@@ -18,7 +18,7 @@ func CreateTournament(
 	switch tournamentType {
 	case "Rodeo":
 		rodeo_factory := tournament.RodeoFactory{
-			TotalRounds:     totalRounds,
+			MaxRounds:       totalRounds,
 			AvailableCourts: availableCourts,
 		}
 

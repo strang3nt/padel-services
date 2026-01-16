@@ -34,7 +34,7 @@ func TestMakeMatchesWithGendersSplit(t *testing.T) {
 	// this configuration should create 5 matches per round, 4 matches per team
 	// thus triggering the gender split logic for tournament creation.
 	rf := RodeoFactory{
-		TotalRounds:     4,
+		MaxRounds:       4,
 		AvailableCourts: 5,
 	}
 
@@ -64,7 +64,7 @@ func TestMakeMatchingsBruteForceGraph_N6K3(t *testing.T) {
 	matchesPerTurn := 3.0 // Max 3 courts available
 
 	rf := &RodeoFactory{
-		TotalRounds:     totalRounds,
+		MaxRounds:       totalRounds,
 		AvailableCourts: int(matchesPerTurn),
 	}
 
@@ -143,7 +143,7 @@ func TestMakeTournamentN8K8(t *testing.T) {
 	dateStart := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	rodeoFactory := RodeoFactory{
-		TotalRounds:     8,
+		MaxRounds:       8,
 		AvailableCourts: 5,
 	}
 	ctx := context.Background()
@@ -153,10 +153,14 @@ func TestMakeTournamentN8K8(t *testing.T) {
 	}
 
 	t.Logf("tournament created successfully: %+v", rodeo)
-
-	t.Run("Assertion_1_TotalRounds", func(t *testing.T) {
-		if len(rodeo.GetRounds()) != 8 {
-			t.Errorf("Expected exactly 8 rounds, got %d", len(rodeo.GetRounds()))
+	totalMatches, _, _ := getMatchesPerTeam(8, 8, 5)
+	t.Run("Assertion_1_AllMatchesAssigned", func(t *testing.T) {
+		count := 0
+		for _, round := range rodeo.GetRounds() {
+			count += len(round)
+		}
+		if totalMatches != count {
+			t.Errorf("Expected exactly %d matches, got %d", totalMatches, count)
 		}
 	})
 
@@ -188,7 +192,7 @@ func TestMakeTournamentN10K8(t *testing.T) {
 	dateStart := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	rodeoFactory := RodeoFactory{
-		TotalRounds:     8,
+		MaxRounds:       8,
 		AvailableCourts: 5,
 	}
 	ctx := context.Background()

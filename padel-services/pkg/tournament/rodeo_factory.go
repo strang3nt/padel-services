@@ -11,7 +11,7 @@ import (
 )
 
 type RodeoFactory struct {
-	TotalRounds     int
+	MaxRounds       int
 	AvailableCourts int
 }
 
@@ -60,7 +60,13 @@ func (rf *RodeoFactory) MakeTournament(
 	}
 
 	totalMatches, matchesPerTurn, matchesPerTeam :=
-		rf.getMatchesPerTeam(n, rf.TotalRounds, rf.AvailableCourts)
+		getMatchesPerTeam(n, rf.MaxRounds, rf.AvailableCourts)
+
+	roundsNumber := rf.MaxRounds
+
+	if math.Ceil(matchesPerTurn)*float64(rf.MaxRounds)-1 > float64(totalMatches) {
+		roundsNumber = rf.MaxRounds - 1
+	}
 
 	if totalMatches == 0 {
 		return nil, errors.New("could not determine valid match parameters. Returning empty tournament")
@@ -70,7 +76,7 @@ func (rf *RodeoFactory) MakeTournament(
 
 	var rounds matchings
 	var err error
-	rounds = rf.makeMatchingsHeuristic(*graph, matchesPerTurn, rf.TotalRounds)
+	rounds = rf.makeMatchingsHeuristic(*graph.GetCopy(), matchesPerTurn, roundsNumber)
 
 	noRoundsAreEmpty := true
 	for _, round := range rounds {
@@ -80,14 +86,14 @@ func (rf *RodeoFactory) MakeTournament(
 		}
 	}
 
-	if noRoundsAreEmpty {
-		rounds, err = rf.makeMatchingsBacktracking(ctx, *graph, matchesPerTurn, rf.TotalRounds)
+	if !noRoundsAreEmpty || len(rounds) != roundsNumber {
+		rounds, err = rf.makeMatchingsBacktracking(ctx, *graph, matchesPerTurn, roundsNumber)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	err = validateTournamentRounds(rounds, teams, rf.TotalRounds, matchesPerTurn, totalMatches, matchesPerTeam)
+	err = validateTournamentRounds(rounds, teams, roundsNumber, matchesPerTurn, totalMatches, matchesPerTeam)
 	if err != nil {
 		log.Printf("Validation error: %v", err)
 		return nil, err
@@ -183,7 +189,7 @@ func canAllGendersPlayOnlyAgainstEachOther(teams []Team, matchesPerTeam int) boo
 	return allGendersCanPlayOnlyAgainstEachOther
 }
 
-func (rf *RodeoFactory) getMatchesPerTeam(teamsNumber int, totalRounds int, availableCourts int) (int, float64, int) {
+func getMatchesPerTeam(teamsNumber int, totalRounds int, availableCourts int) (int, float64, int) {
 
 	matchesPerTeam := totalRounds
 
@@ -232,7 +238,7 @@ func (rf *RodeoFactory) makeMatchingsHeuristic(
 	maxMatchesPerTurn := int(math.Ceil(avgMatchingSize))
 
 	playingTeams := make(nodeSet)
-	var turnMatches matching
+	turnMatches := make(matching)
 
 	for len(res) < totalMatchings {
 		addedSomething := false
@@ -251,7 +257,7 @@ func (rf *RodeoFactory) makeMatchingsHeuristic(
 				}
 			}
 
-			if playingTeams.contains(int(i)) && foundPlayer2 {
+			if !playingTeams.contains(int(i)) && foundPlayer2 {
 				addedSomething = true
 				player1 := i
 
@@ -269,8 +275,8 @@ func (rf *RodeoFactory) makeMatchingsHeuristic(
 			if len(turnMatches) == maxMatchesPerTurn || isLastTurnRequirement {
 				if len(turnMatches) > 0 {
 					res = append(res, turnMatches)
-					playingTeams = make(map[int]struct{})
-					turnMatches = nil
+					playingTeams = make(nodeSet)
+					turnMatches = make(matching)
 				}
 			}
 
@@ -354,7 +360,7 @@ func (rf *RodeoFactory) makeEdges(nodes []int, k int) matching {
 
 func NewRodeoFactory(turns, availableCourts int) *RodeoFactory {
 	return &RodeoFactory{
-		TotalRounds:     turns,
+		MaxRounds:       turns,
 		AvailableCourts: availableCourts,
 	}
 }
