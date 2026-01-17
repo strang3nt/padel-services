@@ -26,5 +26,10 @@ func TestCreatePDFTournament_VerifyCreation(t *testing.T) {
 	})
 
 	// Clean up the generated PDF file after test
-	defer os.Remove(pdfPath)
+	defer func() {
+		err := os.Remove(pdfPath)
+		if err != nil {
+			t.Logf("error while removing generated PDF file: %v", err)
+		}
+	}()
 }
