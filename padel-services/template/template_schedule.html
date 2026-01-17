@@ -17,7 +17,7 @@
       <!-- Left side -->
       <div class="level-left">
         <div class="level-item">
-          <p class="title"><strong>{{ .Tournament.Name }} {{.Tournament.StartDate}}</strong></p>
+          <p class="title is-italic"><strong>{{ .Tournament.Name }} {{.Tournament.StartDate}}</strong></p>
         </div>
       </div>
 
@@ -32,20 +32,20 @@
 
   <section class="rounds">
     {{range .Tournament.Rounds}}
-    <div class="card is-gapless mb-0">
+    <div class="card mb-0 is-gap-0">
 
       <header class="card-header">
-        <p class="card-header-title">Round {{.RoundNumber}}</p>
+        <p class="card-header-title is-centered is-italic has-text-weight-bold is-size-4">ROUND {{.RoundNumber}}</p>
       </header>
 
       <div class="card-content">
 
-        <div class="grid is-col-min-12">
+        <div class="grid is-col-min-12 is-gap-column-1 is-row-gap-0">
           {{range .Matches}}
           <div class="cell">
             <div class="card">
-              <header class="card-header">
-                <p class="card-header-title is-size-7">CAMPO {{.Court}}</p>
+              <header class="card-header with-background">
+                <p class="card-header-title card-title-custom is-centered is-italic has-text-weight-semibold is-size-6">CAMPO {{.Court}}</p>
               </header>
 
               <div class="card-content p-2">
@@ -54,11 +54,11 @@
                   <tbody>
                     <tr class="is-size-7">
                       <td class="has-text-right" style="width: 45%;">{{.TeamA}}</td>
-                      <td class="has-background-light has-text-centered" style="width: 10%;">{{.ScoreA}}</td>
+                      <td class="has-background-brand-red-light has-text-centered" style="width: 10%;">{{.ScoreA}}</td>
                     </tr>
                     <tr class="is-size-7">
                       <td class="has-text-right">{{.TeamB}}</td>
-                      <td class="has-background-light has-text-centered">{{.ScoreB}}</td>
+                      <td class="has-background-brand-red-light has-text-centered">{{.ScoreB}}</td>
                     </tr>
                   </tbody>
                 </table>

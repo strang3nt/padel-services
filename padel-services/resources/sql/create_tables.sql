@@ -32,7 +32,8 @@ CREATE TABLE IF NOT EXISTS team (
 CREATE TABLE IF NOT EXISTS match (
     id SERIAL PRIMARY KEY,
     team1_id INT REFERENCES team(id),
-    team2_id INT REFERENCES team(id)
+    team2_id INT REFERENCES team(id),
+    court_number INT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS round_tournament (

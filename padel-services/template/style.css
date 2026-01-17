@@ -1,21 +1,23 @@
+* {
+    font-family: 'Open Sans', sans-serif;
+}
+
 /* 1. Flat corners and remove shadows */
 .card, .card-header {
-    border-radius: 0 !important;
+    border-radius: 1px !important;
     box-shadow: none !important;
-    border: 1px solid #dbdbdb;
+
+}
+
+.card-title-custom {
+  text-align: center;
+  position: relative;
+  left: -60px; /* Moves the text 20px to the left of the center */
 }
 
 /* 2. Remove padding from Card and Grid containers */
 .card-content {
     padding: 0 !important;
-}
-
-.grid {
-    gap: 0 !important; /* Removes space between match cells */
-}
-
-.cell {
-    padding: 0 !important; /* Removes padding around the match card */
 }
 
 /* 3. Tighten the Table inside matches */
@@ -24,14 +26,20 @@
     background-color: transparent;
 }
 
-/* Force table borders to be visible but thin */
-.table td, .table th {
-    border: 1px solid #eeeeee !important;
-}
-
 .table td {
     padding: 2px 4px !important; /* Minimal padding for legibility */
-    border-bottom: none !important; /* Makes it look flatter */
+}
+
+tr { 
+  border: solid;
+  border-width: 1px 0;
+}
+
+tr:first-child {
+  border-top: none;
+}
+tr:last-child {
+  border-bottom: none;
 }
 
 /* 4. Slim down Headers */
@@ -40,8 +48,7 @@
 }
 
 .card-header-title {
-    padding: 4px 8px !important;
-    font-size: 0.75rem !important;
+    --bulma-card-header-padding: 2px 4px !important;
 }
 
 /* 5. Print & Layout Optimization */
@@ -60,8 +67,8 @@
     .card {
         break-inside: avoid;
     }
-    .card-header {
-        background-color: #ec1f25 !important;
+    .with-background {
+        border: 3px solid #EC1F25 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
@@ -69,4 +76,12 @@
 
 .rounds {
     zoom: 0.85; /* Adjusted to fill the width of the page better */
+}
+
+.has-background-brand-red-light {
+    background-color: #FDE9EA !important;
+}
+
+.has-color-brand-red {
+    color: #EC1F25 !important;
 }
