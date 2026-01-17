@@ -27,10 +27,11 @@ type match struct {
 	RoundNumber int
 	Team1Id     int64
 	Team2Id     int64
+	CourtNumber int
 }
 
 const matchesByTournamentId = `
-SELECT round_number, team1_id, team2_id
+SELECT round_number, team1_id, team2_id, court_number
 FROM match
 JOIN round_tournament ON match.id=round_tournament.match_id
 WHERE round_tournament.tournament_id=$1
@@ -110,24 +111,27 @@ func buildTournamentData(
 
 	teamsMap := make(map[int64]*tournament.Team)
 	matchesMap := make(map[int][]struct {
-		team1 int64
-		team2 int64
+		team1        int64
+		team2        int64
+		court_number int
 	})
 
 	for _, m := range matches {
 		curr, ok := matchesMap[m.RoundNumber]
 		if !ok {
 			matchesMap[m.RoundNumber] = []struct {
-				team1 int64
-				team2 int64
+				team1        int64
+				team2        int64
+				court_number int
 			}{
-				{m.Team1Id, m.Team2Id},
+				{m.Team1Id, m.Team2Id, m.CourtNumber},
 			}
 		} else {
 			curr = append(curr, struct {
-				team1 int64
-				team2 int64
-			}{m.Team1Id, m.Team2Id})
+				team1        int64
+				team2        int64
+				court_number int
+			}{m.Team1Id, m.Team2Id, m.CourtNumber})
 			matchesMap[m.RoundNumber] = curr
 		}
 	}
@@ -152,7 +156,11 @@ func buildTournamentData(
 		for _, t := range v {
 			team1 := teamsMap[t.team1]
 			team2 := teamsMap[t.team2]
-			round = append(round, tournament.Match{TeamA: *team1, TeamB: *team2, MatchStatus: tournament.MatchScheduled})
+			round = append(round, tournament.Match{
+				TeamA:       *team1,
+				TeamB:       *team2,
+				MatchStatus: tournament.MatchScheduled,
+				CourtId:     t.court_number})
 		}
 		rounds[k] = round
 	}

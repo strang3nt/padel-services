@@ -137,7 +137,7 @@ func FromTournamentToTemplateData(tournament tournament.Tournament) TemplateData
 	return TemplateData{
 		Tournament: TournamentData{
 			Name:      tournament.GetName(),
-			StartDate: fmt.Sprintf("%s", tournament.GetDateStart().Format("2006-01-02")),
+			StartDate: tournament.GetDateStart().Format("2006-01-02"),
 			Rounds: func() []Round {
 				var rounds []Round
 				for roundIndex, round := range tournament.GetRounds() {
@@ -151,9 +151,9 @@ func FromTournamentToTemplateData(tournament tournament.Tournament) TemplateData
 
 						matches = append(matches, Match{
 							Court:       strconv.Itoa(match.CourtId),
-							TeamA:       surnamePerson1TeamA[len(surnamePerson1TeamA)-1] + " & " + surnamePerson2TeamA[len(surnamePerson2TeamA)-1],
+							TeamA:       surnamePerson1TeamA[len(surnamePerson1TeamA)-1] + ", " + surnamePerson2TeamA[len(surnamePerson2TeamA)-1],
 							ScoreA:      "",
-							TeamB:       surnamePerson1TeamB[len(surnamePerson1TeamB)-1] + " & " + surnamePerson2TeamB[len(surnamePerson2TeamB)-1],
+							TeamB:       surnamePerson1TeamB[len(surnamePerson1TeamB)-1] + ", " + surnamePerson2TeamB[len(surnamePerson2TeamB)-1],
 							ScoreB:      "",
 							RoundNumber: roundIndex + 1,
 						})
@@ -173,7 +173,7 @@ func FromTournamentDataToTemplateData(tournament tournament.TournamentData) Temp
 	return TemplateData{
 		Tournament: TournamentData{
 			Name:      tournament.Name,
-			StartDate: fmt.Sprintf("%s", tournament.Date.Format("2006-01-02")),
+			StartDate: tournament.Date.Format("2006-01-02"),
 			Rounds: func() []Round {
 				var rounds []Round
 				for roundIndex, round := range tournament.Rounds {
@@ -187,9 +187,9 @@ func FromTournamentDataToTemplateData(tournament tournament.TournamentData) Temp
 
 						matches = append(matches, Match{
 							Court:       strconv.Itoa(match.CourtId),
-							TeamA:       surnamePerson1TeamA[len(surnamePerson1TeamA)-1] + " & " + surnamePerson2TeamA[len(surnamePerson2TeamA)-1],
+							TeamA:       surnamePerson1TeamA[len(surnamePerson1TeamA)-1] + ", " + surnamePerson2TeamA[len(surnamePerson2TeamA)-1],
 							ScoreA:      "",
-							TeamB:       surnamePerson1TeamB[len(surnamePerson1TeamB)-1] + " & " + surnamePerson2TeamB[len(surnamePerson2TeamB)-1],
+							TeamB:       surnamePerson1TeamB[len(surnamePerson1TeamB)-1] + ", " + surnamePerson2TeamB[len(surnamePerson2TeamB)-1],
 							ScoreB:      "",
 							RoundNumber: roundIndex + 1,
 						})
