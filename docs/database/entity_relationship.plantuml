@@ -1,0 +1,62 @@
+@startuml Database
+hide circle
+skinparam linetype ortho
+
+entity "tournament_type" as tournament_type {
+  * id : SERIAL <<PK>>
+  --
+  * name : VARCHAR(255) <<UNIQUE>>
+}
+
+entity "gender" as gender {
+  * id : SERIAL <<PK>>
+  --
+  * name : VARCHAR(255) <<UNIQUE>>
+}
+
+entity "person" as person {
+  * id : SERIAL <<PK>>
+  --
+  * name : VARCHAR(255) <<UNIQUE>>
+}
+
+entity "tournament" as tournament {
+  * id : SERIAL <<PK>>
+  --
+  * tournament_date : TIMESTAMP
+    tournament_type_id : INT <<FK>>
+}
+
+entity "team" as team {
+  * id : SERIAL <<PK>>
+  --
+    person1_id : INT <<FK>>
+    person2_id : INT <<FK>>
+    gender_id : INT <<FK>>
+}
+
+entity "match" as match {
+  * id : SERIAL <<PK>>
+  --
+    team1_id : INT <<FK>>
+    team2_id : INT <<FK>>
+}
+
+entity "round_tournament" as round_tournament {
+  * tournament_id : INT <<PK, FK>>
+  * match_id : INT <<PK, FK>>
+  --
+  * round_number : INT
+}
+
+' Relationships
+tournament_type ||--o{ tournament
+gender ||--o{ team
+person ||--o{ team : "person1"
+person ||--o{ team : "person2"
+team ||--o{ match : "team1"
+team ||--o{ match : "team2"
+tournament ||--o{ round_tournament
+match ||--o{ round_tournament
+
+@enduml
