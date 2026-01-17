@@ -129,12 +129,12 @@ func selectTournament(conn *pgxpool.Pool) datepicker.OnSelectHandler {
 		var msg string
 
 		if len(tournaments) == 0 {
-			msg = fmt.Sprintf(`In data %v non ho trovato tornei`, date.Format("2006-01-02"))
+			msg = fmt.Sprintf("In data %v non ho trovato tornei", date.Format("2006-01-02"))
 		} else {
-			msg = fmt.Sprintf(`In data %v ho trovato i seguenti tornei:\n`, date.Format("2006-01-02"))
+			msg = fmt.Sprintf("In data %v ho trovato i seguenti tornei:\n\n", date.Format("2006-01-02"))
 		}
 		for i, t := range tournaments {
-			txt := fmt.Sprintf("\nTorneo %v, con le seguenti squadre", i)
+			txt := fmt.Sprintf("Torneo %v, con le seguenti squadre:\n", i)
 			for _, tms := range t.Teams {
 				txt = txt + fmt.Sprintf("%v, %v\n", tms.Person_1.Id, tms.Person_2.Id)
 			}
@@ -167,6 +167,7 @@ func createTournamentHandler(state *map[int64]StateMachine) bot.HandlerFunc {
 			Text: `Ho bisogno dei dettagli del torneo, che mi devi inviare in un messaggio,
 rispettando il seguente formato:
 
+<data del torneo in formato YYYY-MM-DD>
 <campi disponibili per il torneo>
 <round del torneo>
 <team 1 partecipante 1>, <team 1 partecipante 2>, <sesso>
@@ -176,6 +177,7 @@ rispettando il seguente formato:
 La voce <sesso> può essere "M" o "F", lascia il campo vuoto per indicare squadre miste.
 Ad esempio:
 
+2026-01-16
 6
 5
 Marco Rossi, Luigi Blu, M
@@ -219,11 +221,28 @@ func printToPdf(state *map[int64]StateMachine, conn *pgxpool.Pool) bot.HandlerFu
 		msgScanner := bufio.NewScanner(strings.NewReader(tournamentData))
 
 		msgScanner.Scan()
+		dateStr := msgScanner.Text()
+		dateTournament, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			_, err := b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: update.Message.Chat.ID,
+				Text:   "Errore: la prima riga deve contenere la data del torneo in formato YYYY-MM-DD.",
+			})
+
+			if err != nil {
+				log.Printf("error while sending message: %v", err)
+				return
+			}
+
+			return
+		}
+
+		msgScanner.Scan()
 		availableCourts, err := strconv.Atoi(msgScanner.Text())
 		if err != nil {
 			_, err := b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: update.Message.Chat.ID,
-				Text:   "Errore: la prima riga deve contenere il numero di campi disponibili per il torneo.",
+				Text:   "Errore: la seconda riga deve contenere il numero di campi disponibili per il torneo.",
 			})
 
 			if err != nil {
@@ -239,7 +258,7 @@ func printToPdf(state *map[int64]StateMachine, conn *pgxpool.Pool) bot.HandlerFu
 		if err != nil {
 			_, err = b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: update.Message.Chat.ID,
-				Text:   "Errore: la seconda riga deve contenere il numero di round da disputare durante il torneo.",
+				Text:   "Errore: la terza riga deve contenere il numero di round da disputare durante il torneo.",
 			})
 			if err != nil {
 				log.Printf("error while sending message: %v", err)
@@ -261,7 +280,7 @@ func printToPdf(state *map[int64]StateMachine, conn *pgxpool.Pool) bot.HandlerFu
 			return
 		}
 		log.Print("creating tournament...")
-		tournament := services.CreateTournament("Rodeo", time.Now(), teams, roundsNumber, availableCourts)
+		tournament := services.CreateTournament("Rodeo", dateTournament, teams, roundsNumber, availableCourts)
 		log.Print("tournament created")
 		template_data := services.FromTournamentToTemplateData(tournament)
 		err = database.CreateTournament(ctx, conn, &tournament)
