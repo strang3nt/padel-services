@@ -103,7 +103,7 @@ func (rf *RodeoFactory) MakeTournament(
 	for _, matching := range rounds {
 		var matches []Match
 
-		currCourt := 0
+		currCourt := 1
 		for edge := range matching {
 			e1 := edge.P1
 			e2 := edge.P2

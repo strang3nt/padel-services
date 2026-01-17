@@ -1,0 +1,72 @@
+/* 1. Flat corners and remove shadows */
+.card, .card-header {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border: 1px solid #dbdbdb;
+}
+
+/* 2. Remove padding from Card and Grid containers */
+.card-content {
+    padding: 0 !important;
+}
+
+.grid {
+    gap: 0 !important; /* Removes space between match cells */
+}
+
+.cell {
+    padding: 0 !important; /* Removes padding around the match card */
+}
+
+/* 3. Tighten the Table inside matches */
+.table {
+    margin-bottom: 0 !important;
+    background-color: transparent;
+}
+
+/* Force table borders to be visible but thin */
+.table td, .table th {
+    border: 1px solid #eeeeee !important;
+}
+
+.table td {
+    padding: 2px 4px !important; /* Minimal padding for legibility */
+    border-bottom: none !important; /* Makes it look flatter */
+}
+
+/* 4. Slim down Headers */
+.card-header {
+    min-height: unset !important;
+}
+
+.card-header-title {
+    padding: 4px 8px !important;
+    font-size: 0.75rem !important;
+}
+
+/* 5. Print & Layout Optimization */
+@media print {
+    @page {
+        size: landscape;
+        margin: 5mm; /* Minimum physical margin */
+    }
+    
+    body {
+        margin: 0;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .card {
+        break-inside: avoid;
+    }
+    .card-header {
+        background-color: #ec1f25 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+.rounds {
+    zoom: 0.85; /* Adjusted to fill the width of the page better */
+}

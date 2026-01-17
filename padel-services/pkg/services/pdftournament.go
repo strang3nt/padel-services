@@ -30,8 +30,9 @@ type Round struct {
 }
 
 type TournamentData struct {
-	Data   string
-	Rounds []Round
+	Name      string
+	StartDate string
+	Rounds    []Round
 }
 
 type TemplateData struct {
@@ -40,9 +41,9 @@ type TemplateData struct {
 
 const chromeExecutable = "google-chrome"
 
-func CreatePdfTournament(data TemplateData, templateFileName string) (string, error) {
+func CreatePdfTournament(data TemplateData, templatePath string, templateFileName string) (string, error) {
 
-	tempHTMLFile, err := executeAndSaveTemplate(templateFileName, data)
+	tempHTMLFile, err := executeAndSaveTemplate(templatePath, templateFileName, data)
 	if err != nil {
 		return "", fmt.Errorf("error executing and saving template: %v", err)
 	}
@@ -62,14 +63,14 @@ func CreatePdfTournament(data TemplateData, templateFileName string) (string, er
 	return outputFile, nil
 }
 
-func executeAndSaveTemplate(tplFilePath string, data TemplateData) (string, error) {
+func executeAndSaveTemplate(tplFilePath string, tplFileName string, data TemplateData) (string, error) {
 
-	tplContent, err := os.ReadFile(tplFilePath)
+	tplContent, err := os.ReadFile(filepath.Join(tplFilePath, tplFileName))
 	if err != nil {
 		return "", fmt.Errorf("reading template file: %w", err)
 	}
 
-	t, err := template.New(filepath.Base(tplFilePath)).Parse(string(tplContent))
+	t, err := template.New(filepath.Base(tplFileName)).Parse(string(tplContent))
 	if err != nil {
 		return "", fmt.Errorf("parsing template: %w", err)
 	}
@@ -79,7 +80,7 @@ func executeAndSaveTemplate(tplFilePath string, data TemplateData) (string, erro
 		return "", fmt.Errorf("executing template: %w", err)
 	}
 
-	tempFile, err := os.CreateTemp("", "schedule-*.html")
+	tempFile, err := os.CreateTemp(tplFilePath, "schedule-*.html")
 	if err != nil {
 		return "", fmt.Errorf("creating temp file: %w", err)
 	}
@@ -135,7 +136,8 @@ func generatePDFWithHeadlessChrome(inputHTMLPath, outputPath string) error {
 func FromTournamentToTemplateData(tournament tournament.Tournament) TemplateData {
 	return TemplateData{
 		Tournament: TournamentData{
-			Data: fmt.Sprintf("%s - Start Date: %s", tournament.GetName(), tournament.GetDateStart().Format("2006-01-02")),
+			Name:      tournament.GetName(),
+			StartDate: fmt.Sprintf("%s", tournament.GetDateStart().Format("2006-01-02")),
 			Rounds: func() []Round {
 				var rounds []Round
 				for roundIndex, round := range tournament.GetRounds() {
@@ -170,7 +172,8 @@ func FromTournamentToTemplateData(tournament tournament.Tournament) TemplateData
 func FromTournamentDataToTemplateData(tournament tournament.TournamentData) TemplateData {
 	return TemplateData{
 		Tournament: TournamentData{
-			Data: fmt.Sprintf("%s - Start Date: %s", tournament.Name, tournament.Date.Format("2006-01-02")),
+			Name:      tournament.Name,
+			StartDate: fmt.Sprintf("%s", tournament.Date.Format("2006-01-02")),
 			Rounds: func() []Round {
 				var rounds []Round
 				for roundIndex, round := range tournament.Rounds {

@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"padelservices/pkg/services"
 	"padelservices/pkg/tournament"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -27,6 +28,7 @@ import (
 var defaultMessage string
 
 var ctx = context.Background()
+var projectRoot = os.Getenv("PROJECT_ROOT")
 
 func main() {
 	conn, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
@@ -280,7 +282,7 @@ func printToPdf(state *map[int64]StateMachine, conn *pgxpool.Pool) bot.HandlerFu
 }
 
 func printPdf(ctx context.Context, template_data services.TemplateData, b *bot.Bot, chatId int64) {
-	pdfPath, err := services.CreatePdfTournament(template_data, "template/template_schedule.html")
+	pdfPath, err := services.CreatePdfTournament(template_data, filepath.Join(projectRoot, "template"), "template_schedule.html")
 	if err != nil {
 		log.Printf("Error creating PDF: %v", err)
 		return

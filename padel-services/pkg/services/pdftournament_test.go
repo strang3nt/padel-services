@@ -9,12 +9,13 @@ func TestCreatePDFTournament_VerifyCreation(t *testing.T) {
 
 	data := TemplateData{
 		Tournament: TournamentData{
-			Data:   "",
-			Rounds: []Round{},
+			Name:      "Test Tournament",
+			StartDate: "2024-10-01",
+			Rounds:    []Round{},
 		},
 	}
 
-	pdfPath, err := CreatePdfTournament(data, "../../template/template_schedule.html")
+	pdfPath, err := CreatePdfTournament(data, "../../template", "template_schedule.html")
 	if err != nil {
 		t.Fatalf("CreatePdfTournament returned an error: %v", err)
 	}
