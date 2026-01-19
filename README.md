@@ -1,4 +1,4 @@
-# Padel Swiss Army Knife
+# Padel Services
 
 This repository contains a set of services geared
 towards Padel clubs.
