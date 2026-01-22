@@ -49,7 +49,7 @@ func MakeTeamsFromMessage(stringteams *bufio.Scanner) ([]tournament.Team, error)
 		person1 := tournament.Person{Id: strings.TrimSpace(row[0])}
 		person2 := tournament.Person{Id: strings.TrimSpace(row[1])}
 
-		g := tournament.Male
+		g := tournament.Else
 
 		if len(row) >= 3 {
 			g = tournament.GenderFromString(strings.TrimSpace(row[2]))

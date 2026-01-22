@@ -396,15 +396,18 @@ func orderTeamsByGender(teams []Team) []Team {
 			top = false
 		} else {
 			orderedTeams = append(orderedTeams, team)
+			top = true
 		}
 	}
 
+	top = true
 	for _, team := range genderBuckets[Male] {
 		if top {
 			orderedTeams = prepend(orderedTeams, team)
 			top = false
 		} else {
 			orderedTeams = append(orderedTeams, team)
+			top = true
 		}
 	}
 

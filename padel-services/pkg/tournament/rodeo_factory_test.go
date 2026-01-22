@@ -218,3 +218,52 @@ func TestMakeTournamentN10K8(t *testing.T) {
 	})
 
 }
+
+func TestMakeTournamentMaximiseMaleMatches(t *testing.T) {
+
+	teams := []Team{
+		{Person_1: Person{Id: "Elena Miotto"}, Person_2: Person{Id: "Alberto Rampazzo"}, TeamGender: Else},
+		{Person_1: Person{Id: "Marcos Vera"}, Person_2: Person{Id: "Santiago Alonso"}, TeamGender: Male},
+		{Person_1: Person{Id: "Diego Arrieta"}, Person_2: Person{Id: "Marcelo Merino"}, TeamGender: Male},
+		{Person_1: Person{Id: "Cristian Garcia"}, Person_2: Person{Id: "Jorgina Torres"}, TeamGender: Else},
+		{Person_1: Person{Id: "Juanita Perez"}, Person_2: Person{Id: "Pedro Rodriguez"}, TeamGender: Else},
+		{Person_1: Person{Id: "Maria Gomez"}, Person_2: Person{Id: "Ana Lopez"}, TeamGender: Female},
+		{Person_1: Person{Id: "Laura Martinez"}, Person_2: Person{Id: "Carolina Rodriguez"}, TeamGender: Female},
+		{Person_1: Person{Id: "Sofia Ramirez"}, Person_2: Person{Id: "Isabella Torres"}, TeamGender: Female},
+		{Person_1: Person{Id: "Marco Gaio"}, Person_2: Person{Id: "Luigina Lodi"}, TeamGender: Else},
+		{Person_1: Person{Id: "Federica Manca"}, Person_2: Person{Id: "Alberta Alberti"}, TeamGender: Female},
+		{Person_1: Person{Id: "Giorgia Neri"}, Person_2: Person{Id: "Luca Bianchi"}, TeamGender: Else},
+		{Person_1: Person{Id: "Francesco Russo"}, Person_2: Person{Id: "Giulio Ferrari"}, TeamGender: Male},
+	}
+
+	dateStart := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	rodeoFactory := RodeoFactory{
+		MaxRounds:       7,
+		AvailableCourts: 6,
+	}
+	ctx := context.Background()
+	rodeo, err := rodeoFactory.MakeTournament(ctx, teams, dateStart)
+	if err != nil {
+		t.Fatalf("makeTournament returned an error: %v", err)
+	}
+
+	t.Logf("tournament created successfully: %+v", rodeo)
+
+	t.Run("Assertion_2_MaximizeMaleMatches", func(t *testing.T) {
+		countMalesMatches := 0
+		for _, round := range rodeo.GetRounds() {
+			for _, match := range round {
+				teamA := match.TeamA
+				teamB := match.TeamB
+				if teamA.TeamGender == Male && teamB.TeamGender == Male {
+					countMalesMatches++
+				}
+			}
+		}
+		if countMalesMatches != 3 {
+			t.Errorf("Expected 3 male matches, got %d", countMalesMatches)
+		}
+	})
+
+}
