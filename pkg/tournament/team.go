@@ -24,13 +24,13 @@ func GenderFromString(g string) Gender {
 }
 
 type Person struct {
-	Id string
+	Id string `json:"id"`
 }
 
 type Team struct {
-	Person_1   Person
-	Person_2   Person
-	TeamGender Gender
+	Person_1   Person `json:"person1"`
+	Person_2   Person `json:"person2"`
+	TeamGender Gender `json:"gender"`
 }
 
 func NewTeam(person1, person2 Person, teamGender Gender) *Team {

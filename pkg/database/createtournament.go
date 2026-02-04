@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"padelservices/pkg/tournament"
+	"github.com/strang3nt/padel-services/pkg/tournament"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -117,7 +117,7 @@ func CreateTournament(ctx context.Context, conn *pgxpool.Pool, t *tournament.Tou
 
 	rounds := (*t).GetRounds()
 	for roundIndex, round := range rounds {
-		for _, match := range round {
+		for _, match := range round.Matches {
 			team1Id := teamIds[match.TeamA]
 			team2Id := teamIds[match.TeamB]
 			err := queryCreateMatch(ctx, tx, roundIndex, tournamentId, team1Id, team2Id, match.CourtId)

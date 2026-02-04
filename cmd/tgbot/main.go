@@ -8,16 +8,17 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"padelservices/pkg/services"
-	"padelservices/pkg/tournament"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/strang3nt/padel-services/pkg/services"
+	"github.com/strang3nt/padel-services/pkg/tournament"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"padelservices/pkg/database"
+	"github.com/strang3nt/padel-services/pkg/database"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -301,7 +302,10 @@ func printToPdf(state *map[int64]StateMachine, conn *pgxpool.Pool) bot.HandlerFu
 }
 
 func printPdf(ctx context.Context, template_data services.TemplateData, b *bot.Bot, chatId int64) {
-	pdfPath, err := services.CreatePdfTournament(template_data, filepath.Join(projectRoot, "template"), "template_schedule.html")
+	pdfPath, err := services.CreatePdfTournament(template_data, filepath.Join(projectRoot, "template"),
+		"template_schedule.html",
+		fmt.Sprint(template_data.Tournament.Name, "_", template_data.Tournament.StartDate),
+	)
 	if err != nil {
 		log.Printf("Error creating PDF: %v", err)
 		return

@@ -120,7 +120,7 @@ func (rf *RodeoFactory) MakeTournament(
 			matches = append(matches, m)
 		}
 
-		turns = append(turns, matches)
+		turns = append(turns, Round{matches})
 	}
 
 	return NewRodeo("Rodeo", dateStart, teams, turns), nil

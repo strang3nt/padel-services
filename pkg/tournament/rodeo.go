@@ -60,7 +60,7 @@ func (rodeo *Rodeo) SerializeToCSV() string {
 		sb.WriteString(fmt.Sprintf("Round %d,", i))
 		match := 1
 
-		for _, m := range t {
+		for _, m := range t.Matches {
 
 			team1 := m.TeamA
 			team2 := m.TeamB

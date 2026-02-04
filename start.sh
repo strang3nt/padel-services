@@ -10,4 +10,4 @@ else
 fi
 
 echo "🚀 Starting Go application..."
-go run ./...
+go run ./cmd/tgbot

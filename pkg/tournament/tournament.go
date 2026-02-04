@@ -5,7 +5,9 @@ import (
 	"time"
 )
 
-type Round []Match
+type Round struct {
+	Matches []Match `json:"matches"`
+}
 
 type MatchStatus int
 
@@ -23,10 +25,10 @@ const (
 )
 
 type Match struct {
-	TeamA       Team
-	TeamB       Team
-	MatchStatus MatchStatus
-	CourtId     int
+	TeamA       Team        `json:"teamA"`
+	TeamB       Team        `json:"teamB"`
+	MatchStatus MatchStatus `json:"matchStatus"`
+	CourtId     int         `json:"courtId"`
 }
 
 type Tournament interface {
@@ -38,10 +40,10 @@ type Tournament interface {
 }
 
 type TournamentData struct {
-	Name   string
-	Date   time.Time
-	Teams  []Team
-	Rounds []Round
+	Name   string    `json:"name"`
+	Date   time.Time `json:"date"`
+	Teams  []Team    `json:"teams"`
+	Rounds []Round   `json:"rounds"`
 }
 
 func MakeTournamentData(name string, date time.Time, teams []Team, rounds []Round) TournamentData {

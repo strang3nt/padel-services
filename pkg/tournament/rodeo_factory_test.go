@@ -45,7 +45,7 @@ func TestMakeMatchesWithGendersSplit(t *testing.T) {
 
 	t.Run("Assertion_1_TournamentIsCorrectlySplitBetweenMaleAndFemale", func(t *testing.T) {
 		for _, round := range tournament.GetRounds() {
-			for _, match := range round {
+			for _, match := range round.Matches {
 				teamA := teams[match.TeamA.TeamGender]
 				teamB := teams[match.TeamB.TeamGender]
 				if teamA.TeamGender != teamB.TeamGender {
@@ -157,7 +157,7 @@ func TestMakeTournamentN8K8(t *testing.T) {
 	t.Run("Assertion_1_AllMatchesAssigned", func(t *testing.T) {
 		count := 0
 		for _, round := range rodeo.GetRounds() {
-			count += len(round)
+			count += len(round.Matches)
 		}
 		if totalMatches != count {
 			t.Errorf("Expected exactly %d matches, got %d", totalMatches, count)
@@ -166,8 +166,9 @@ func TestMakeTournamentN8K8(t *testing.T) {
 
 	t.Run("Assertion_2_SizeConstraint", func(t *testing.T) {
 		for i, round := range rodeo.GetRounds() {
-			if len(round) <= 0 {
-				t.Errorf("Round %d violated constraint: Expected >= 0 matches, got %d", i+1, len(round))
+			n := len(round.Matches)
+			if n <= 0 {
+				t.Errorf("Round %d violated constraint: Expected >= 0 matches, got %d", i+1, n)
 			}
 		}
 	})
@@ -211,8 +212,8 @@ func TestMakeTournamentN10K8(t *testing.T) {
 
 	t.Run("Assertion_2_SizeConstraint", func(t *testing.T) {
 		for i, round := range rodeo.GetRounds() {
-			if len(round) <= 0 {
-				t.Errorf("Round %d violated constraint: Expected >= 0 matches, got %d", i+1, len(round))
+			if len(round.Matches) <= 0 {
+				t.Errorf("Round %d violated constraint: Expected >= 0 matches, got %d", i+1, len(round.Matches))
 			}
 		}
 	})
@@ -253,7 +254,7 @@ func TestMakeTournamentMaximiseMaleMatches(t *testing.T) {
 	t.Run("Assertion_2_MaximizeMaleMatches", func(t *testing.T) {
 		countMalesMatches := 0
 		for _, round := range rodeo.GetRounds() {
-			for _, match := range round {
+			for _, match := range round.Matches {
 				teamA := match.TeamA
 				teamB := match.TeamB
 				if teamA.TeamGender == Male && teamB.TeamGender == Male {

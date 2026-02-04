@@ -15,7 +15,7 @@ func TestCreatePDFTournament_VerifyCreation(t *testing.T) {
 		},
 	}
 
-	pdfPath, err := CreatePdfTournament(data, "../../template", "template_schedule.html")
+	pdfPath, err := CreatePdfTournament(data, "../../template", "template_schedule.html", "file_name")
 	if err != nil {
 		t.Fatalf("CreatePdfTournament returned an error: %v", err)
 	}

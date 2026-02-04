@@ -7,13 +7,12 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"padelservices/pkg/tournament"
 	"path/filepath"
 	"strconv"
 	"strings"
-)
 
-// --- Data Structures (Same as before) ---
+	"github.com/strang3nt/padel-services/pkg/tournament"
+)
 
 type Match struct {
 	Court       string
@@ -41,7 +40,12 @@ type TemplateData struct {
 
 const chromeExecutable = "google-chrome"
 
-func CreatePdfTournament(data TemplateData, templatePath string, templateFileName string) (string, error) {
+func CreatePdfTournament(
+	data TemplateData,
+	templatePath string,
+	templateFileName string,
+	outputFileName string,
+) (string, error) {
 
 	tempHTMLFile, err := executeAndSaveTemplate(templatePath, templateFileName, data)
 	if err != nil {
@@ -54,7 +58,7 @@ func CreatePdfTournament(data TemplateData, templatePath string, templateFileNam
 		}
 	}()
 
-	outputFile := "tournament_schedule.pdf"
+	outputFile := fmt.Sprint(outputFileName, ".pdf")
 
 	if err := generatePDFWithHeadlessChrome(tempHTMLFile, outputFile); err != nil {
 		return "", fmt.Errorf("error generating PDF: %v", err)
@@ -85,6 +89,8 @@ func executeAndSaveTemplate(tplFilePath string, tplFileName string, data Templat
 		return "", fmt.Errorf("creating temp file: %w", err)
 	}
 
+	fmt.Printf("Temp file created: %s\n", tempFile.Name())
+
 	defer func() {
 		err := tempFile.Close()
 		if err != nil {
@@ -101,7 +107,12 @@ func executeAndSaveTemplate(tplFilePath string, tplFileName string, data Templat
 func generatePDFWithHeadlessChrome(inputHTMLPath, outputPath string) error {
 	fmt.Printf("Starting PDF generation using %s...\n", chromeExecutable)
 
-	inputURL := "file://" + inputHTMLPath
+	absPath, err := filepath.Abs(inputHTMLPath)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path: %w", err)
+	}
+	inputURL := "file://" + absPath
+	fmt.Printf("Input URL: %s\n", inputURL)
 
 	args := []string{
 		"--headless=new",
@@ -142,7 +153,7 @@ func FromTournamentToTemplateData(tournament tournament.Tournament) TemplateData
 				var rounds []Round
 				for roundIndex, round := range tournament.GetRounds() {
 					var matches []Match
-					for _, match := range round {
+					for _, match := range round.Matches {
 
 						surnamePerson1TeamA := strings.Split(match.TeamA.Person_1.Id, " ")
 						surnamePerson2TeamA := strings.Split(match.TeamA.Person_2.Id, " ")
@@ -178,7 +189,7 @@ func FromTournamentDataToTemplateData(tournament tournament.TournamentData) Temp
 				var rounds []Round
 				for roundIndex, round := range tournament.Rounds {
 					var matches []Match
-					for _, match := range round {
+					for _, match := range round.Matches {
 
 						surnamePerson1TeamA := strings.Split(match.TeamA.Person_1.Id, " ")
 						surnamePerson2TeamA := strings.Split(match.TeamA.Person_2.Id, " ")

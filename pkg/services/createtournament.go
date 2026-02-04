@@ -3,10 +3,11 @@ package services
 import (
 	"bufio"
 	"log"
-	"padelservices/pkg/tournament"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/strang3nt/padel-services/pkg/tournament"
 )
 
 func CreateTournament(

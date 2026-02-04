@@ -3,8 +3,9 @@ package database
 import (
 	"context"
 	"fmt"
-	"padelservices/pkg/tournament"
 	"time"
+
+	"github.com/strang3nt/padel-services/pkg/tournament"
 
 	"github.com/jackc/pgx/v5"
 
@@ -16,7 +17,7 @@ type tournamentNameType struct {
 	TournamentType string
 }
 
-const tournamentsByDateAndType = `
+const tournamentsByDate = `
 SELECT tournament.id, tournament_type.name
 FROM tournament
 JOIN tournament_type ON tournament.tournament_type_id=tournament_type.id
@@ -67,7 +68,7 @@ WHERE team.id IN (
 func GetTournamentsByDate(ctx context.Context, conn *pgxpool.Pool, tournamentDate time.Time) ([]tournament.TournamentData, error) {
 
 	var tournaments []tournament.TournamentData
-	rows, err := conn.Query(ctx, tournamentsByDateAndType, tournamentDate)
+	rows, err := conn.Query(ctx, tournamentsByDate, tournamentDate)
 	if err != nil {
 		return tournaments, fmt.Errorf("query error: %w", err)
 	}
@@ -162,7 +163,7 @@ func buildTournamentData(
 				MatchStatus: tournament.MatchScheduled,
 				CourtId:     t.court_number})
 		}
-		rounds[k] = round
+		rounds[k] = tournament.Round{Matches: round}
 	}
 
 	return tournament.MakeTournamentData(tournamentName, startDate, teamsResult, rounds)
