@@ -23,7 +23,6 @@ jobs:
         uses: golangci/golangci-lint-action@v9
         with:
           version: ${{ env.GOLANGCI_LINT_VERSION }}
-          working-directory: ./padel-services
 
   build:
     runs-on: ubuntu-latest
@@ -34,8 +33,6 @@ jobs:
       with:
         go-version: ${{ env.GO_VERSION }}
     - name: Build
-      working-directory: ./padel-services
-      run: go build -v ./...
+      run: go build -v github.com/strang3nt/padel-services/cmd/tgminiapp
     - name: Test
-      working-directory: ./padel-services
       run: go test -v ./...
