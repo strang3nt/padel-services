@@ -21,7 +21,9 @@ const tournamentsByDate = `
 SELECT tournament.id, tournament_type.name
 FROM tournament
 JOIN tournament_type ON tournament.tournament_type_id=tournament_type.id
-WHERE tournament.tournament_date::date = $1::date
+JOIN sports_center ON tournament.sports_center_id=sports_center.id
+JOIN users ON sports_center.id=users.sports_center_id
+WHERE tournament.tournament_date::date = $1::date AND users.id = $2
 `
 
 type match struct {
@@ -65,10 +67,14 @@ WHERE team.id IN (
 )
 `
 
-func GetTournamentsByDate(ctx context.Context, conn *pgxpool.Pool, tournamentDate time.Time) ([]tournament.TournamentData, error) {
+func GetTournamentsByDate(
+	ctx context.Context,
+	conn *pgxpool.Pool,
+	userId int64,
+	tournamentDate time.Time) ([]tournament.TournamentData, error) {
 
 	var tournaments []tournament.TournamentData
-	rows, err := conn.Query(ctx, tournamentsByDate, tournamentDate)
+	rows, err := conn.Query(ctx, tournamentsByDate, tournamentDate, userId)
 	if err != nil {
 		return tournaments, fmt.Errorf("query error: %w", err)
 	}

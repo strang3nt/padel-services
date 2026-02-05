@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func queryInsertTeam(ctx context.Context, tx pgx.Tx, team1 tournament.Team) (int64, error) {
+func queryInsertTeam(ctx context.Context, tx pgx.Tx, userId int64, team1 tournament.Team) (int64, error) {
 
 	const sql = `
     WITH upserted_people AS (
@@ -68,22 +68,22 @@ func queryCreateMatch(ctx context.Context, tx pgx.Tx, round_number int, tourname
 	return nil
 }
 
-func queryCreateTournament(ctx context.Context, tx pgx.Tx, tournamentDate time.Time, tournamentType string) (int64, error) {
+func queryCreateTournament(ctx context.Context, tx pgx.Tx, userId int64, tournamentDate time.Time, tournamentType string) (int64, error) {
 
 	sql := `
-    INSERT INTO tournament (tournament_date, tournament_type_id)
-    VALUES ($1, (SELECT id FROM tournament_type WHERE name = $2))
+    INSERT INTO tournament (tournament_date, tournament_type_id, user_id)
+    VALUES ($1, (SELECT id FROM tournament_type WHERE name = $2), $3)
     RETURNING id;`
 
 	var id int64
-	if err := tx.QueryRow(ctx, sql, tournamentDate, tournamentType).Scan(&id); err != nil {
+	if err := tx.QueryRow(ctx, sql, tournamentDate, tournamentType, userId).Scan(&id); err != nil {
 		return -1, fmt.Errorf("error while creating tournament: %w", err)
 	}
 
 	return id, nil
 }
 
-func CreateTournament(ctx context.Context, conn *pgxpool.Pool, t *tournament.Tournament) error {
+func CreateTournament(ctx context.Context, conn *pgxpool.Pool, userId int64, t *tournament.Tournament) error {
 	log.Print("creating tournament...")
 	tx, err := conn.Begin(ctx)
 	if err != nil {
@@ -101,14 +101,14 @@ func CreateTournament(ctx context.Context, conn *pgxpool.Pool, t *tournament.Tou
 		return fmt.Errorf("error converting tournament type to string: %w", err)
 	}
 
-	tournamentId, err := queryCreateTournament(ctx, tx, (*t).GetDateStart(), tournamentType)
+	tournamentId, err := queryCreateTournament(ctx, tx, userId, (*t).GetDateStart(), tournamentType)
 	if err != nil {
 		return err
 	}
 
 	teamIds := make(map[tournament.Team]int64)
 	for _, team := range (*t).GetTeams() {
-		teamId, err := queryInsertTeam(ctx, tx, team)
+		teamId, err := queryInsertTeam(ctx, tx, userId, team)
 		if err != nil {
 			return err
 		}

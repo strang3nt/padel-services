@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"html/template"
 	"log"
@@ -38,16 +39,52 @@ type TemplateData struct {
 	Tournament TournamentData
 }
 
-const chromeExecutable = "google-chrome"
+type TournamentType int
 
-func CreatePdfTournament(
+const (
+	Rodeo TournamentType = iota
+)
+
+var tournamentType = map[TournamentType]string{
+	Rodeo: "Rodeo",
+}
+
+func (tt TournamentType) String() string {
+	return tournamentType[tt]
+}
+
+type TournamentPdfGenerator struct {
+	chromeExecutable string
+	templatesDirs    map[TournamentType]*template.Template
+}
+
+//go:embed templates/*
+var templates embed.FS
+var style, _ = templates.ReadFile("templates/style.css")
+var templateRodeoSchedule, _ = template.ParseFS(templates, "templates/template_rodeo_schedule.html")
+
+func MakeTournamentPdfGenerator() TournamentPdfGenerator {
+	var chromeExecutable string = "google-chrome"
+	if value, ok := os.LookupEnv("CHROME_EXECUTABLE"); ok {
+		chromeExecutable = value
+	}
+
+	return TournamentPdfGenerator{
+		chromeExecutable: chromeExecutable,
+		templatesDirs: map[TournamentType]*template.Template{
+			Rodeo: templateRodeoSchedule,
+		},
+	}
+
+}
+
+func (t TournamentPdfGenerator) CreatePdfTournament(
 	data TemplateData,
-	templatePath string,
-	templateFileName string,
+	tt TournamentType,
 	outputFileName string,
 ) (string, error) {
 
-	tempHTMLFile, err := executeAndSaveTemplate(templatePath, templateFileName, data)
+	tempHTMLFile, err := t.runTemplate(data, tt)
 	if err != nil {
 		return "", fmt.Errorf("error executing and saving template: %v", err)
 	}
@@ -60,36 +97,32 @@ func CreatePdfTournament(
 
 	outputFile := fmt.Sprint(outputFileName, ".pdf")
 
-	if err := generatePDFWithHeadlessChrome(tempHTMLFile, outputFile); err != nil {
+	if err := t.generatePDFWithHeadlessChrome(tempHTMLFile, outputFile); err != nil {
 		return "", fmt.Errorf("error generating PDF: %v", err)
 	}
 
 	return outputFile, nil
 }
 
-func executeAndSaveTemplate(tplFilePath string, tplFileName string, data TemplateData) (string, error) {
+func (tt TournamentPdfGenerator) runTemplate(
+	data TemplateData, tournamentType TournamentType) (string, error) {
 
-	tplContent, err := os.ReadFile(filepath.Join(tplFilePath, tplFileName))
-	if err != nil {
-		return "", fmt.Errorf("reading template file: %w", err)
+	tournamentTemplate, ok := tt.templatesDirs[tournamentType]
+	if !ok {
+		return "", fmt.Errorf("unexpected tournament type: %s", tournamentType)
 	}
 
-	t, err := template.New(filepath.Base(tplFileName)).Parse(string(tplContent))
-	if err != nil {
-		return "", fmt.Errorf("parsing template: %w", err)
+	templateData := map[string]any{
+		"Tournament": data.Tournament,
+		"Style":      string(style),
 	}
 
 	var buf bytes.Buffer
-	if err = t.Execute(&buf, data); err != nil {
+	if err := tournamentTemplate.Execute(&buf, templateData); err != nil {
 		return "", fmt.Errorf("executing template: %w", err)
 	}
 
-	tempFile, err := os.CreateTemp(tplFilePath, "schedule-*.html")
-	if err != nil {
-		return "", fmt.Errorf("creating temp file: %w", err)
-	}
-
-	fmt.Printf("Temp file created: %s\n", tempFile.Name())
+	tempFile, _ := os.CreateTemp("./", "schedule-*.html")
 
 	defer func() {
 		err := tempFile.Close()
@@ -97,6 +130,7 @@ func executeAndSaveTemplate(tplFilePath string, tplFileName string, data Templat
 			log.Printf("error while closing temp file: %v", err)
 		}
 	}()
+
 	if _, err := tempFile.Write(buf.Bytes()); err != nil {
 		return "", fmt.Errorf("writing to temp file: %w", err)
 	}
@@ -104,15 +138,10 @@ func executeAndSaveTemplate(tplFilePath string, tplFileName string, data Templat
 	return tempFile.Name(), nil
 }
 
-func generatePDFWithHeadlessChrome(inputHTMLPath, outputPath string) error {
-	fmt.Printf("Starting PDF generation using %s...\n", chromeExecutable)
+func (tt TournamentPdfGenerator) generatePDFWithHeadlessChrome(inputHTMLPath, outputPath string) error {
 
-	absPath, err := filepath.Abs(inputHTMLPath)
-	if err != nil {
-		return fmt.Errorf("failed to get absolute path: %w", err)
-	}
+	absPath, _ := filepath.Abs(inputHTMLPath)
 	inputURL := "file://" + absPath
-	fmt.Printf("Input URL: %s\n", inputURL)
 
 	args := []string{
 		"--headless=new",
@@ -128,7 +157,7 @@ func generatePDFWithHeadlessChrome(inputHTMLPath, outputPath string) error {
 		inputURL,
 	}
 
-	cmd := exec.Command(chromeExecutable, args...)
+	cmd := exec.Command(tt.chromeExecutable, args...)
 
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr

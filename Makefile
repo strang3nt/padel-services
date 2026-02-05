@@ -24,7 +24,7 @@ $(TARGET_EXEC): $(GO_SRCS) $(CLIENT_OBJS)
 	go build github.com/strang3nt/padel-services/cmd/tgminiapp
 
 $(CLIENT_OBJS): $(CLIENT_SRCS)
-	cd client && npm run build
+	cd client && npm run build:dev
 	rm -rf $(WEBAPP_DIR)/dist
 	cp -r $(CLIENT_BUILD_DIR) $(WEBAPP_DIR)/dist
 
