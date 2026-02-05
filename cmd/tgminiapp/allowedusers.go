@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/strang3nt/padel-services/pkg/database"
 )
 
@@ -11,6 +13,14 @@ type userData struct {
 
 type AllowedUsers struct {
 	users map[int64]userData
+}
+
+func (au AllowedUsers) GetLogoPath(userId int64) (string, error) {
+	if ud, ok := au.users[userId]; ok {
+		return ud.LogoPath, nil
+	}
+
+	return "", fmt.Errorf("user %d does not exist", userId)
 }
 
 func (au AllowedUsers) IsUserAllowed(userId int64) bool {

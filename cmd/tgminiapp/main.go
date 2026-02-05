@@ -98,13 +98,11 @@ func main() {
 			return
 		}
 
-		// Whitelist check
 		if !whitelistedIDs.IsUserAllowed(telegramID) {
 			c.JSON(403, gin.H{"error": "Access denied: ID not whitelisted"})
 			return
 		}
 
-		// Issue JWT
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"sub": telegramID,
 			"exp": time.Now().Add(time.Hour * 72).Unix(),
@@ -119,13 +117,12 @@ func main() {
 	{
 
 		protected.GET("/tournaments", func(c *gin.Context) {
-			// DefaultQuery provides a fallback if the key doesn't exist
 			dateString := c.Query("date")
 			date, _ := time.Parse("2006-01-02", dateString)
 			userIdBlob, _ := c.Get("user_id")
-			userId, _ := userIdBlob.(int64)
+			userId := userIdBlob.(float64)
 
-			tournaments, _ := database.GetTournamentsByDate(ctx, conn, userId, date)
+			tournaments, _ := database.GetTournamentsByDate(ctx, conn, int64(userId), date)
 			c.JSON(http.StatusOK, gin.H{
 				"date":        dateString,
 				"tournaments": tournaments})
@@ -138,7 +135,7 @@ func main() {
 			totalRounds, _ := strconv.ParseInt(c.Query("totalRounds"), 10, 32)
 			availableCourts, _ := strconv.ParseInt(c.Query("availableCourts"), 10, 32)
 			userIdBlob, _ := c.Get("user_id")
-			userId, _ := userIdBlob.(int64)
+			userId := userIdBlob.(float64)
 			var teams []tournament.Team
 			if err := c.ShouldBindJSON(&teams); err != nil {
 				fmt.Print(err)
@@ -149,7 +146,7 @@ func main() {
 			tournament := services.CreateTournament(tournamentType, dateStart, teams, int(totalRounds), int(availableCourts))
 
 			if tournament != nil {
-				err = database.CreateTournament(ctx, conn, userId, &tournament)
+				err = database.CreateTournament(ctx, conn, int64(userId), &tournament)
 				if err != nil {
 					c.JSON(500, gin.H{"error": "could not save tournament"})
 					return
@@ -167,8 +164,11 @@ func main() {
 				c.JSON(400, gin.H{"error": "Payload missing"})
 				return
 			}
+			userIdBlob, _ := c.Get("user_id")
+			userId := userIdBlob.(float64)
 			token := downloadTokens.GenerateToken(5*time.Minute, req)
 			c.JSON(200, gin.H{
+				"user":  int64(userId),
 				"token": token,
 			})
 		})
@@ -177,6 +177,11 @@ func main() {
 
 	r.GET("/api/tournament/download", func(c *gin.Context) {
 		token := c.Query("token")
+		user, err := strconv.ParseInt(c.Query("user"), 10, 64)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
 		c.Header("Access-Control-Allow-Origin", "https://web.telegram.org")
 
 		blob, exists := downloadTokens.GetBlob(token)
@@ -186,10 +191,13 @@ func main() {
 			return
 		}
 
+		userData, err := whitelistedIDs.GetLogoPath(user)
+
 		pdfPath, err := tournamentPdfGenerator.CreatePdfTournament(
 			services.FromTournamentDataToTemplateData(tournament),
 			services.Rodeo,
 			fmt.Sprint(tournament.Date.Format("2006-01-02"), "_", tournament.Name, "_", token),
+			userData,
 		)
 		if err != nil {
 			log.Printf("Error creating PDF: %v", err)
@@ -212,20 +220,16 @@ func main() {
 	publicFiles, _ := fs.Sub(frontendFiles, "dist")
 	staticServer := http.FS(publicFiles)
 
-	// 3. THE SPA SERVING LOGIC
 	r.NoRoute(func(c *gin.Context) {
 
 		path := c.Request.URL.Path
 
-		// If the request is for a real file (like /assets/index-123.js), serve it
 		_, err := publicFiles.Open(strings.TrimPrefix(path, "/"))
 		if err == nil {
 			http.FileServer(staticServer).ServeHTTP(c.Writer, c.Request)
 			return
 		}
 
-		// Otherwise, it's a React Router path (like /dashboard).
-		// Serve index.html and let React handle the rest.
 		index, _ := publicFiles.Open("index.html")
 		stat, _ := index.Stat()
 		content, _ := io.ReadAll(index)
