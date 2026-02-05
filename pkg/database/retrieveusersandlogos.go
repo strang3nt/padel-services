@@ -28,16 +28,12 @@ type UserData struct {
 func GetUsersIds(ctx context.Context, conn *pgxpool.Pool) ([]UserData, error) {
 
 	query := `
-SELECT
-		l.id
-    l.logo,
-		sc.name,
-    l.mime_type, 
-    array_agg(u.id) AS user_ids
-FROM logos l
-JOIN sports_center sc ON sc.logo_id = l.id
-JOIN users u ON u.sports_center_id = sc.id
-GROUP BY l.id;`
+SELECT logos.id, logos.logo, sports_center.name, logos.mime_type, array_agg(users.id) AS user_ids
+FROM logos
+JOIN sports_center ON sports_center.logo_id = logos.id
+JOIN users ON users.sports_center_id = sports_center.id
+GROUP BY logos.id, sports_center.name
+	`
 
 	downloadDir := "static/logos"
 	os.MkdirAll(downloadDir, 0755)

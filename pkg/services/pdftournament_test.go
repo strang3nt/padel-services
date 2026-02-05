@@ -17,7 +17,7 @@ func TestCreatePDFTournament_VerifyCreation(t *testing.T) {
 
 	tt := MakeTournamentPdfGenerator()
 
-	pdfPath, err := tt.CreatePdfTournament(data, Rodeo, "file_name")
+	pdfPath, err := tt.CreatePdfTournament(data, Rodeo, "file_name", "")
 	if err != nil {
 		t.Fatalf("CreatePdfTournament returned an error: %v", err)
 	}

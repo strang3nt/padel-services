@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func queryInsertTeam(ctx context.Context, tx pgx.Tx, userId int64, team1 tournament.Team) (int64, error) {
+func queryInsertTeam(ctx context.Context, tx pgx.Tx, team1 tournament.Team) (int64, error) {
 
 	const sql = `
     WITH upserted_people AS (
@@ -108,7 +108,7 @@ func CreateTournament(ctx context.Context, conn *pgxpool.Pool, userId int64, t *
 
 	teamIds := make(map[tournament.Team]int64)
 	for _, team := range (*t).GetTeams() {
-		teamId, err := queryInsertTeam(ctx, tx, userId, team)
+		teamId, err := queryInsertTeam(ctx, tx, team)
 		if err != nil {
 			return err
 		}

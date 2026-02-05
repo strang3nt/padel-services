@@ -21,8 +21,7 @@ const tournamentsByDate = `
 SELECT tournament.id, tournament_type.name
 FROM tournament
 JOIN tournament_type ON tournament.tournament_type_id=tournament_type.id
-JOIN sports_center ON tournament.sports_center_id=sports_center.id
-JOIN users ON sports_center.id=users.sports_center_id
+JOIN users ON tournament.user_id=users.id
 WHERE tournament.tournament_date::date = $1::date AND users.id = $2
 `
 

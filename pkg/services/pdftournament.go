@@ -60,7 +60,6 @@ type TournamentPdfGenerator struct {
 
 //go:embed templates/*
 var templates embed.FS
-var style, _ = templates.ReadFile("templates/style.css")
 var templateRodeoSchedule, _ = template.ParseFS(templates, "templates/template_rodeo_schedule.html")
 
 func MakeTournamentPdfGenerator() TournamentPdfGenerator {
@@ -82,9 +81,10 @@ func (t TournamentPdfGenerator) CreatePdfTournament(
 	data TemplateData,
 	tt TournamentType,
 	outputFileName string,
+	logoPath string,
 ) (string, error) {
 
-	tempHTMLFile, err := t.runTemplate(data, tt)
+	tempHTMLFile, err := t.runTemplate(data, tt, logoPath)
 	if err != nil {
 		return "", fmt.Errorf("error executing and saving template: %v", err)
 	}
@@ -105,7 +105,7 @@ func (t TournamentPdfGenerator) CreatePdfTournament(
 }
 
 func (tt TournamentPdfGenerator) runTemplate(
-	data TemplateData, tournamentType TournamentType) (string, error) {
+	data TemplateData, tournamentType TournamentType, logoPath string) (string, error) {
 
 	tournamentTemplate, ok := tt.templatesDirs[tournamentType]
 	if !ok {
@@ -114,7 +114,7 @@ func (tt TournamentPdfGenerator) runTemplate(
 
 	templateData := map[string]any{
 		"Tournament": data.Tournament,
-		"Style":      string(style),
+		"LogoPath":   logoPath,
 	}
 
 	var buf bytes.Buffer
