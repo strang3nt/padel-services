@@ -1,11 +1,7 @@
-import { isRGB } from '@tma.js/sdk-react';
 import { Cell, Checkbox, Section } from '@telegram-apps/telegram-ui';
 import type { FC, ReactNode } from 'react';
-
-import { RGB } from '@/components/RGB/RGB.tsx';
 import { Link } from '@/components/Link/Link.tsx';
 import { bem } from '@/css/bem.ts';
-
 import './DisplayData.css';
 
 const [, e] = bem('display-data');
@@ -34,9 +30,7 @@ export const DisplayData: FC<DisplayDataProps> = ({ header, rows }) => (
         if ('type' in item) {
           valueNode = <Link to={item.value}>Open</Link>;
         } else if (typeof item.value === 'string') {
-          valueNode = isRGB(item.value)
-            ? <RGB color={item.value}/>
-            : item.value;
+          valueNode = item.value;
         } else if (typeof item.value === 'boolean') {
           valueNode = <Checkbox checked={item.value} disabled/>;
         } else {

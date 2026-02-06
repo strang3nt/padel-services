@@ -1,11 +1,10 @@
 import { type FC } from 'react';
-import { List } from '@telegram-apps/telegram-ui';
+import { Cell, List, Placeholder, Section } from '@telegram-apps/telegram-ui';
 import { TournamentData, Tournaments } from './RetrieveTournamentPage';
 import { Page } from '@/components/Page.tsx';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
-import { postEvent } from '@tma.js/sdk-react';
-import { DisplayData } from '@/components/DisplayData/DisplayData';
+import { downloadFile } from '@tma.js/sdk-react';
 
 export const AvailableTournamentsPage: FC = () => {
   const { bearerToken } = useAuth()
@@ -13,7 +12,7 @@ export const AvailableTournamentsPage: FC = () => {
 
   const onClick = (tournamentData: TournamentData) => {
 
-    const apiRequest = fetch(
+    fetch(
       `/api/tournament/generate-link`,
       {
         method: "POST",
@@ -23,17 +22,16 @@ export const AvailableTournamentsPage: FC = () => {
         },
         body: JSON.stringify(tournamentData),
       }
-    )
-    apiRequest.then((response) => {
+    ).then((response) => {
       response.json().then(({ user, token }) => {
         const url = `${window.location.origin}/api/tournament/download?user=${user}&token=${token}`
         if (import.meta.env.DEV) {
           window.location.href = url;
         } else {
-          postEvent('web_app_request_file_download', {
-            url: url,
-            file_name: `${tournamentData.date}_${tournamentData.name}.pdf`
-          })
+          downloadFile(
+            url,
+            `${tournamentData.date}_${tournamentData.name}.pdf`
+          )
         }
       }
       )
@@ -43,22 +41,26 @@ export const AvailableTournamentsPage: FC = () => {
   const { date, tournaments } = location.state as Tournaments;
   return (
     <Page>
-      <List>
-        <DisplayData
-          header={`Tournaments at ${date}`}
-          rows={
-            tournaments
-              .map((tournamentData) => (
-                {
-                  title: tournamentData.name,
-                  value: <span onClick={() => onClick(tournamentData)}>
-                    Participants: {tournamentData.teams.length}
-                  </span>
-                }
-              ))
-          }
-        />
-      </List>
-    </Page>
+      <Section
+        header={`Tournaments at date ${date}`}
+      >
+
+        {
+          tournaments.length == 0 ? <Placeholder description="No tournaments found at selected date" /> :
+            <List>
+              {tournaments.map(
+                (tournamentData) =>
+                  <Cell
+                    description={`Participants: ${tournamentData.teams.length}`}
+                    onClick={() => onClick(tournamentData)}
+                  >
+                    {tournamentData.name}
+                  </Cell>
+
+              )}      </List>}
+
+
+      </Section>
+    </Page >
   );
 };

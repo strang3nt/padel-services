@@ -38,7 +38,6 @@ export interface Tournaments {
   tournaments: TournamentData[]
 }
 
-// --- Types ---
 interface FormData {
   date: string;
 }
@@ -46,7 +45,7 @@ interface FormData {
 export const RetrieveTournamentPage: FC = () => {
   const { bearerToken } = useAuth()
   const [formData, setFormData] = useState<FormData>({ date: '' });
-  const navigate = useNavigate(); // The magic wand for navigation
+  const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -55,7 +54,7 @@ export const RetrieveTournamentPage: FC = () => {
     setIsLoading(true);
 
     try {
-      // Simulating an API call
+
       const response = await fetch(
         `/api/tournaments?date=${formData.date}`,
         {

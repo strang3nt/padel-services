@@ -1,11 +1,11 @@
-import { Text, Button, ButtonCell, InlineButtons, Input, List, Section, Select } from '@telegram-apps/telegram-ui';
-import { InlineButtonsItem } from '@telegram-apps/telegram-ui/dist/components/Blocks/InlineButtons/components/InlineButtonsItem/InlineButtonsItem';
+import { Text, Button, Input, List, Section, Select, Cell, Placeholder } from '@telegram-apps/telegram-ui';
 import { useState, type FC } from 'react';
-import { Form, Link, Outlet, useLoaderData, LoaderFunctionArgs, replace, useNavigate } from 'react-router-dom';
-import { IoIosAdd, IoIosSave, IoIosClose } from "react-icons/io";
+import { Form, Outlet, useLoaderData, LoaderFunctionArgs, replace, useNavigate } from 'react-router-dom';
+import { IoIosAdd, IoIosClose, IoIosArrowForward } from "react-icons/io";
 import { Page } from '@/components/Page';
 import { Team } from '@/pages/RetrieveTournamentPage';
 import { useAuth } from '@/components/AuthProvider';
+import { Link } from '@/components/Link/Link';
 
 export const CreateTournamentPage: FC = () => {
   return <Section
@@ -34,39 +34,62 @@ export const AddTeamsPage: FC = () => {
 
   const loaderData = useLoaderData() as { teams: Team[] } | null;
   const teams = loaderData?.teams || [];
+  const [, setRefresh] = useState(0);
+
+  const handleDeleteTeam = (index: number) => {
+    tournamentStore.removeTeam(index);
+    setRefresh(prev => prev + 1);
+  };
+
   return <Page>
-    <InlineButtons mode="plain">
-      <Link to='/create-tournament/add-team' replace>
-        <InlineButtonsItem text="Add">
-          <IoIosAdd />
-        </InlineButtonsItem>
+    <List>
+      <Link to='/create-tournament/add-team'>
+        <Cell
+          after={<IoIosAdd />}
+        >
+          Add Team
+        </Cell>
       </Link>
-      <Link to='/create-tournament/tournament-type'>
-        <InlineButtonsItem text="Save">
-          <IoIosSave />
-        </InlineButtonsItem>
+      <Link to='/create-tournament/tournament-type' state={teams}>
+        <Cell
+          after={<IoIosArrowForward />}
+        >
+          Next
+        </Cell>
       </Link>
-    </InlineButtons>
-    {
-      teams.length == 0 ?
-        'No teams added yet'
-        : <List> {teams.map(({
-          person1: { id: teammate1 }, person2: { id: teammate2 }, gender }) =>
-          <ButtonCell
-            after={< IoIosClose />}>
-            {`${teammate1}, ${teammate2}, ${genderToString(gender)}`}
-          </ButtonCell>)}
-        </List >
-    }
+      <Section
+        header='Teams added'
+      >
+        {
+          teams.length == 0 ?
+            <Placeholder
+              description="No teams added yet"
+            />
+            : <List> {teams.map(({
+              person1: { id: teammate1 }, person2: { id: teammate2 }, gender }, i) =>
+              <Cell
+              
+                key={i}
+                after={<IoIosClose />}
+                onClick={() => handleDeleteTeam(i)}
+                subtitle={`${genderToString(gender)} team`}
+              >
+                {`${teammate1}, ${teammate2}}`}
+              </Cell>)}
+            </List >
+        }
+      </Section>
+    </List>
   </Page>
 }
-
-
 
 export const tournamentStore = {
   teams: [] as Team[],
   addTeam: (team: Team) => {
     tournamentStore.teams.push(team);
+  },
+  removeTeam: (index: number) => {
+    tournamentStore.teams.splice(index, 1)
   },
   getTeams: () => tournamentStore.teams,
 };
@@ -87,7 +110,6 @@ export async function addTeamAction({ request }: LoaderFunctionArgs) {
 
   tournamentStore.addTeam(newTeam);
 
-  // Redirect back to the list after adding
   return replace('/create-tournament');
 }
 
@@ -98,13 +120,13 @@ export const AddTeamPage: FC = () => {
       <Form method="post">
         <Input
           header="First teammate"
-          name="teammate1" // Important!
+          name="teammate1"
           type="text"
           required
         />
         <Input
           header="Second teammate"
-          name="teammate2" // Important!
+          name="teammate2"
           type="text"
           required
         />
@@ -193,7 +215,7 @@ export const ChooseTournamentType: FC = () => {
         return <>
           <Input
             header="Courts available"
-            name="courtsAvailable" // Important!
+            name="courtsAvailable"
             type="number"
             onChange={(e) => setFormData({
               ...formData,
@@ -203,7 +225,7 @@ export const ChooseTournamentType: FC = () => {
           />
           <Input
             header="Number of rounds"
-            name="roundsNumber" // Important!
+            name="roundsNumber"
             type="number"
             onChange={(e) => setFormData({
               ...formData,

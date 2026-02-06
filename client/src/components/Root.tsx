@@ -1,27 +1,14 @@
 import { App } from '@/components/App.tsx';
 import { ErrorBoundary } from '@/components/ErrorBoundary.tsx';
-
-export function ErrorBoundaryError({ error }: { error: unknown }) {
-  return (
-    <div>
-      <p>An unhandled error occurred:</p>
-      <blockquote>
-        <code>
-          {error instanceof Error
-            ? error.message
-            : typeof error === 'string'
-              ? error
-              : JSON.stringify(error)}
-        </code>
-      </blockquote>
-    </div>
-  );
-}
+import { GenericErrorPage } from '@/pages/GenericErrorPage';
+import { IconContext } from 'react-icons/lib';
 
 export function Root() {
   return (
-    <ErrorBoundary fallback={ErrorBoundaryError}>
-        <App/>
-    </ErrorBoundary>
+    <IconContext.Provider value={{ size: "20px", className: "global-class-name" }}>
+      <ErrorBoundary fallback={GenericErrorPage}>
+        <App />
+      </ErrorBoundary>
+    </IconContext.Provider>
   );
 }

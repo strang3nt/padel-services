@@ -6,7 +6,7 @@ import { StrictMode } from 'react';
 import { retrieveLaunchParams } from '@tma.js/sdk-react';
 
 import { Root } from '@/components/Root.tsx';
-import { EnvUnsupported } from '@/components/EnvUnsupported.tsx';
+import { GenericErrorPage } from '@/pages/GenericErrorPage.tsx';
 import { init } from '@/init.ts';
 
 import './index.css';
@@ -36,5 +36,5 @@ try {
       );
     });
 } catch (e) {
-  root.render(<EnvUnsupported/>);
+  root.render(<GenericErrorPage error='You are not using a supported platform'/>);
 }
