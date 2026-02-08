@@ -55,8 +55,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: build-client
-    container:
-      image: zenika/alpine-chrome:with-node
     steps:
     - uses: actions/checkout@v5
     - name: Download client
@@ -64,13 +62,15 @@ jobs:
       with:
         name: client
         path: cmd/tgminiapp/dist/
+    - name: Install chromium
+      run: apt-get install chromium
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
         go-version: ${{ env.GO_VERSION }}
     - name: Test
       env:
-        CHROME_EXECUTABLE: google-chrome
+        CHROME_EXECUTABLE: chromium
       run: go test -v ./...
 
   build:
@@ -88,5 +88,5 @@ jobs:
           name: client
           path: cmd/tgminiapp/dist/
       - name: Build
-        run: make
+        run: make backend
 

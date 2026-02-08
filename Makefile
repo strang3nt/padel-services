@@ -11,11 +11,13 @@ CLIENT_BUILD_DIR := $(CLIENT_DIR)/dist
 GO_SRCS := $(shell find $(GO_DIRS) -name '*.go') go.mod
 CLIENT_SRCS := $(shell find $(CLIENT_DIR) -maxdepth 3 -name '*.ts' -or -name '*.tsx' -or -name '*.html' -or -name '*.json' -or -name '*.css' | grep -v $(CLIENT_BUILD_DIR))
 
-.PHONY: all clean client
+.PHONY: all clean client backend
 
 all: $(TARGET_EXEC)
 
-# Dedicated target name for the client build
+backend:
+	go build -o $(TARGET_EXEC) github.com/strang3nt/padel-services/cmd/tgminiapp
+
 client: $(CLIENT_BUILD_DIR)/index.html
 
 $(TARGET_EXEC): $(GO_SRCS) client
