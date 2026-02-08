@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     make npm \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
+    && npm install -g pnpm@latest-10 \
+    && cd client && pnpm install && cd .. \
     && make
 
 # --------------------------------------------------------------#
