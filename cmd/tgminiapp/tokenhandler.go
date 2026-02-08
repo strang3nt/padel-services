@@ -28,7 +28,7 @@ func (fm *FileTokenHandler) GenerateToken(
 	blob any,
 ) string {
 	b := make([]byte, 16)
-	rand.Read(b)
+	rand.Read(b) //nolint:all
 	token := hex.EncodeToString(b)
 
 	fm.mutex.Lock()

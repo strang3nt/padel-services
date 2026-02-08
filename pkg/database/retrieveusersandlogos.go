@@ -36,7 +36,10 @@ GROUP BY logos.id, sports_center.name
 	`
 
 	downloadDir := "static/logos"
-	os.MkdirAll(downloadDir, 0755)
+
+	if err := os.MkdirAll(downloadDir, 0755); err != nil {
+		panic(err)
+	}
 
 	rows, _ := conn.Query(ctx, query)
 	usersLogos, _ := pgx.CollectRows(rows, pgx.RowToStructByPos[logoData])

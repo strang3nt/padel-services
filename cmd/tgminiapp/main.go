@@ -191,8 +191,7 @@ func main() {
 			return
 		}
 
-		userData, err := whitelistedIDs.GetLogoPath(user)
-
+		userData, _ := whitelistedIDs.GetLogoPath(user)
 		pdfPath, err := tournamentPdfGenerator.CreatePdfTournament(
 			services.FromTournamentDataToTemplateData(tournament),
 			services.Rodeo,
@@ -240,5 +239,7 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	r.Run(":" + port)
+	if err := r.Run(":" + port); err != nil {
+		panic(err)
+	}
 }

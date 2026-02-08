@@ -63,7 +63,7 @@ var templates embed.FS
 var templateRodeoSchedule, _ = template.ParseFS(templates, "templates/template_rodeo_schedule.html")
 
 func MakeTournamentPdfGenerator() TournamentPdfGenerator {
-	var chromeExecutable string = "google-chrome"
+	chromeExecutable := "google-chrome"
 	if value, ok := os.LookupEnv("CHROME_EXECUTABLE"); ok {
 		chromeExecutable = value
 	}
