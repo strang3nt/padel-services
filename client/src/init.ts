@@ -38,7 +38,7 @@ export async function init(options: {
           let tp: Partial<ThemeParams> = {};
           if (firstThemeSent) {
             const state = themeParams.state;
-            tp = state as Partial<ThemeParams>;
+            tp = state as unknown as Partial<ThemeParams>;
           } else {
             firstThemeSent = true;
             const lp = retrieveLaunchParams();
