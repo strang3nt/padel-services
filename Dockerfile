@@ -21,7 +21,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    chromium \
+    chromium ca-certificates \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
