@@ -19,8 +19,7 @@ const root = ReactDOM.createRoot(document.getElementById('root')!);
 try {
   const launchParams = retrieveLaunchParams();
   const { tgWebAppPlatform: platform } = launchParams;
-  const debug = (launchParams.tgWebAppStartParam || '').includes('debug')
-    || true;
+  const debug = (launchParams.tgWebAppStartParam || '').includes('debug');
 
   // Configure all application dependencies.
   await init({

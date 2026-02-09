@@ -212,7 +212,7 @@ export const ChooseTournamentType: FC = () => {
             }
           })
         }
-        return <>
+        return <List>
           <Input
             header="Courts available"
             name="courtsAvailable"
@@ -255,7 +255,7 @@ export const ChooseTournamentType: FC = () => {
             formData.availableCourts
 
           )}>Send</Button>
-        </>
+        </List>
 
       default:
         return "Tournament type not supported";

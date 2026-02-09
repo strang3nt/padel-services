@@ -7,7 +7,6 @@ export const ProtectedRoute = () => {
 
   if (error) throw new Error(`${error}`)
   if (loading) return <Placeholder
-    description="Description"
     header="Validating session"
   >
     <Spinner size="l" />
