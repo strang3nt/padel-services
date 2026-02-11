@@ -1,6 +1,6 @@
 module github.com/strang3nt/padel-services
 
-go 1.24.10
+go 1.25.5
 
 require github.com/jackc/pgx/v5 v5.8.0
 
