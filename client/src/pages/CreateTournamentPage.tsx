@@ -1,4 +1,4 @@
-import { Text, Button, Input, List, Section, Select, Cell, Placeholder } from '@telegram-apps/telegram-ui';
+import { Button, Input, List, Section, Select, Cell, Placeholder } from '@telegram-apps/telegram-ui';
 import { useState, type FC } from 'react';
 import { Form, Outlet, useLoaderData, LoaderFunctionArgs, replace, useNavigate } from 'react-router-dom';
 import { IoIosAdd, IoIosClose, IoIosArrowForward } from "react-icons/io";
@@ -6,6 +6,9 @@ import { Page } from '@/components/Page';
 import { Team } from '@/pages/RetrieveTournamentPage';
 import { useAuth } from '@/components/AuthProvider';
 import { Link } from '@/components/Link/Link';
+import { bem } from '@/css/bem';
+
+const [, e] = bem('display-data');
 
 export const CreateTournamentPage: FC = () => {
   return <Section
@@ -34,11 +37,11 @@ export const AddTeamsPage: FC = () => {
 
   const loaderData = useLoaderData() as { teams: Team[] } | null;
   const teams = loaderData?.teams || [];
-  const [, setRefresh] = useState(0);
+  const [_, setRefresh] = useState(false)
 
   const handleDeleteTeam = (index: number) => {
     tournamentStore.removeTeam(index);
-    setRefresh(prev => prev + 1);
+    setRefresh(prev => !prev)
   };
 
   return <Page>
@@ -74,7 +77,7 @@ export const AddTeamsPage: FC = () => {
                 onClick={() => handleDeleteTeam(i)}
                 subtitle={`${genderToString(gender)} team`}
               >
-                {`${teammate1}, ${teammate2}}`}
+                {`${teammate1}, ${teammate2}`}
               </Cell>)}
             </List >
         }
@@ -130,7 +133,7 @@ export const AddTeamPage: FC = () => {
           type="text"
           required
         />
-        <Select header="Select" name="gender">
+        <Select header="Select gender" name="gender">
           <option value={0}>Male</option>
           <option value={1}>Female</option>
           <option value={2}>Mixed</option>
@@ -233,7 +236,7 @@ export const ChooseTournamentType: FC = () => {
             })}
             required
           />
-          <Text>
+          <span className={e('line-value')}>
             {
               (() => {
                 let totalMatches, matchesPerTurn, matchesPerTeam;
@@ -246,8 +249,8 @@ export const ChooseTournamentType: FC = () => {
 
               })()
             }
-          </Text>
-          <Button onClick={() => sendRodeoTournament(
+          </span>
+          <Button stretched onClick={() => sendRodeoTournament(
             selectedTournament,
             new Date(formData.tournamentDate),
             tournamentStore.teams,

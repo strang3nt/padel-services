@@ -4,13 +4,13 @@ import { TournamentData, Tournaments } from './RetrieveTournamentPage';
 import { Page } from '@/components/Page.tsx';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
-import { downloadFile } from '@tma.js/sdk-react';
+import { postEvent } from '@tma.js/sdk-react';
 
 export const AvailableTournamentsPage: FC = () => {
   const { bearerToken } = useAuth()
   const location = useLocation();
 
-  const onClick = (tournamentData: TournamentData) => {
+  const downloadTournament = (tournamentData: TournamentData) => {
 
     fetch(
       `/api/tournament/generate-link`,
@@ -28,10 +28,10 @@ export const AvailableTournamentsPage: FC = () => {
         if (import.meta.env.DEV) {
           window.location.href = url;
         } else {
-          downloadFile(
-            url,
-            `${tournamentData.date}_${tournamentData.name}.pdf`
-          )
+          postEvent('web_app_request_file_download', {
+            url: url,
+            file_name: `${tournamentData.date}_${tournamentData.name}.pdf`
+          })
         }
       }
       )
@@ -46,13 +46,13 @@ export const AvailableTournamentsPage: FC = () => {
       >
 
         {
-          tournaments.length == 0 ? <Placeholder description="No tournaments found at selected date" /> :
+          tournaments == null || tournaments.length == 0 ? <Placeholder description="No tournaments found at selected date" /> :
             <List>
               {tournaments.map(
                 (tournamentData) =>
                   <Cell
                     description={`Participants: ${tournamentData.teams.length}`}
-                    onClick={() => onClick(tournamentData)}
+                    onClick={() => downloadTournament(tournamentData)}
                   >
                     {tournamentData.name}
                   </Cell>
