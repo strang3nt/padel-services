@@ -7,7 +7,7 @@ MAIN_DIR := $(WEBAPP_DIR)
 GO_DIRS := $(TEMPLATE_DIR) $(MAIN_DIR) $(PKG_DIR)
 CLIENT_DIR := ./client
 CLIENT_BUILD_DIR := $(CLIENT_DIR)/dist
-
+ENVIRONMENT := 'prod'
 GO_SRCS := $(shell find $(GO_DIRS) -name '*.go') go.mod
 CLIENT_SRCS := $(shell find $(CLIENT_DIR) -maxdepth 3 -name '*.ts' -or -name '*.tsx' -or -name '*.html' -or -name '*.json' -or -name '*.css' | grep -v $(CLIENT_BUILD_DIR))
 
@@ -24,7 +24,11 @@ $(TARGET_EXEC): $(GO_SRCS) client
 	go build -o $(TARGET_EXEC) github.com/strang3nt/padel-services/cmd/tgminiapp
 
 $(CLIENT_BUILD_DIR)/index.html: $(CLIENT_SRCS)
+ifeq ($(ENVIRONMENT),dev)
+	cd $(CLIENT_DIR) && pnpm run build:dev
+else 
 	cd $(CLIENT_DIR) && pnpm run build
+endif
 	rm -rf $(WEBAPP_DIR)/dist
 	cp -r $(CLIENT_BUILD_DIR) $(WEBAPP_DIR)/dist
 

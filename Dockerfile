@@ -2,6 +2,7 @@ FROM golang:1.25-trixie AS builder
 
 
 ENV DEBIAN_FRONTEND=noninteractive
+ARG ENVIRONMENT=prod
 ENV TZ=Etc/UTC
 COPY . .
 
