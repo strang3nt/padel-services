@@ -34,7 +34,7 @@ type match struct {
 
 const matchesByTournamentId = `
 SELECT round_number, team1_id, team2_id, court_number
-FROM match
+FROM "match"
 JOIN round_tournament ON match.id=round_tournament.match_id
 WHERE round_tournament.tournament_id=$1
 ORDER BY round_number
@@ -55,12 +55,12 @@ JOIN person p2 ON team.person2_id=p2.id
 JOIN gender ON team.gender_id=gender.id
 WHERE team.id IN (
 	SELECT team1_id
-	FROM match
+	FROM "match"
 	JOIN round_tournament ON match.id=round_tournament.match_id
 	WHERE round_tournament.tournament_id=$1
 	UNION
 	SELECT team2_id
-	FROM match
+	FROM "match"
 	JOIN round_tournament ON match.id=round_tournament.match_id
 	WHERE round_tournament.tournament_id=$1
 )

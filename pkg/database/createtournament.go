@@ -44,7 +44,7 @@ func queryCreateMatch(ctx context.Context, tx pgx.Tx, round_number int, tourname
 		WITH
 
 		new_match AS (
-				INSERT INTO match (team1_id, team2_id, court_number)
+				INSERT INTO "match" (team1_id, team2_id, court_number)
 				VALUES (
 						($1),	($2), ($3)
 				)
@@ -84,7 +84,7 @@ func queryCreateTournament(ctx context.Context, tx pgx.Tx, userId int64, tournam
 }
 
 func CreateTournament(ctx context.Context, conn *pgxpool.Pool, userId int64, t *tournament.Tournament) error {
-	log.Print("creating tournament...")
+	log.Println("creating tournament...")
 	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("error starting transaction: %w", err)

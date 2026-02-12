@@ -132,7 +132,7 @@ func main() {
 		})
 
 		protected.POST("/create-tournament", func(c *gin.Context) {
-			fmt.Print("Create tournament handler called")
+			log.Println("create tournament handler called")
 			tournamentType := c.Query("tournamentType")
 			dateStart, _ := time.Parse(time.RFC3339, c.Query("dateStart"))
 			totalRounds, _ := strconv.ParseInt(c.Query("totalRounds"), 10, 32)
@@ -151,6 +151,7 @@ func main() {
 			if tournament != nil {
 				err = database.CreateTournament(ctx, conn, int64(userId), &tournament)
 				if err != nil {
+					log.Println("error while saving tournament: ", err)
 					c.JSON(500, gin.H{"error": "could not save tournament"})
 					return
 				}
