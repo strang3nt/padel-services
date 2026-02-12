@@ -1,4 +1,4 @@
-import { Button, Input, List, Section, Select, Cell, Placeholder } from '@telegram-apps/telegram-ui';
+import { Button, Input, List, Section, Select, Cell, Placeholder, Snackbar } from '@telegram-apps/telegram-ui';
 import { useState, type FC } from 'react';
 import { Form, Outlet, useLoaderData, LoaderFunctionArgs, replace, useNavigate } from 'react-router-dom';
 import { IoIosAdd, IoIosClose, IoIosArrowForward } from "react-icons/io";
@@ -150,6 +150,11 @@ interface FormData {
   tournamentDate: string;
 }
 
+interface NotificationContent {
+  title: string;
+  description: string;
+  onClose?: () => void;
+}
 
 export const ChooseTournamentType: FC = () => {
 
@@ -188,6 +193,7 @@ export const ChooseTournamentType: FC = () => {
   const { bearerToken } = useAuth()
   const [selectedTournament, setTournament] = useState("Rodeo");
   const navigate = useNavigate()
+  const [open, setOpen] = useState<null | NotificationContent>(null);
 
   const renderSwitch = (): React.ReactNode => {
     switch (selectedTournament) {
@@ -209,9 +215,22 @@ export const ChooseTournamentType: FC = () => {
             body: JSON.stringify(teams)
           }).then(response => {
             if (response.ok) {
-              navigate("/")
+
+              setOpen(
+                {
+                  title: "Tournament creation success",
+                  description: "Tournament created and saved successfully",
+                  onClose: () => { navigate("/") }
+                }
+              )
             } else {
-              throw Error("Could not create tournament")
+              setOpen(
+                {
+                  title: "Tournament creation failed",
+                  description: "Try again later",
+                  onClose: () => { navigate("/") }
+                }
+              )
             }
           })
         }
@@ -266,6 +285,14 @@ export const ChooseTournamentType: FC = () => {
   }
 
   return <Page>
+    {open && <Snackbar
+      onClose={() => {
+        setOpen(null);
+        open?.onClose?.();
+      }}
+      children={open.title}
+      description={open.description}
+    />}
     <Form>
       <Select
         header="Select"
