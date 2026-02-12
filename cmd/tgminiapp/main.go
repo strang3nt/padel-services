@@ -122,7 +122,10 @@ func main() {
 			userIdBlob, _ := c.Get("user_id")
 			userId := userIdBlob.(float64)
 
-			tournaments, _ := database.GetTournamentsByDate(ctx, conn, int64(userId), date)
+			tournaments, err := database.GetTournamentsByDate(ctx, conn, int64(userId), date)
+			if err != nil {
+				log.Printf("error while retrieving tournaments: %v", err)
+			}
 			c.JSON(http.StatusOK, gin.H{
 				"date":        dateString,
 				"tournaments": tournaments})
@@ -199,7 +202,7 @@ func main() {
 			userData,
 		)
 		if err != nil {
-			log.Printf("Error creating PDF: %v", err)
+			log.Printf("error creating PDF: %v", err)
 			return
 		}
 

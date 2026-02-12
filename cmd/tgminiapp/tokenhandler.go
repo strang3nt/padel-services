@@ -37,15 +37,22 @@ func (fm *FileTokenHandler) GenerateToken(
 		Blob:   blob,
 	}
 	fm.mutex.Unlock()
+
+	time.AfterFunc(duration, func() {
+		fm.mutex.Lock()
+		delete(fm.store, token)
+		fm.mutex.Unlock()
+	})
+
 	return token
 }
 
 func (fm *FileTokenHandler) GetBlob(token string) (any, bool) {
 	if data, ok := fm.store[token]; ok && time.Now().Before(data.Expiry) {
 		fm.mutex.Lock()
-		delete(fm.store, token)
+		data := data.Blob
 		fm.mutex.Unlock()
-		return data.Blob, true
+		return data, true
 	}
 
 	return "", false
