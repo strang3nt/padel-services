@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && npm install -g pnpm@latest-10 \
     && cd client && pnpm install && cd .. \
-    && make
+    && make ENVIRONMENT="$ENVIRONMENT"
 
 # --------------------------------------------------------------#
 
