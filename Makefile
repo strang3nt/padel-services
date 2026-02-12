@@ -1,10 +1,9 @@
 TARGET_EXEC := tgminiapp
-TEMPLATE_DIR := ./template
 WEBAPP_DIR := ./cmd/tgminiapp
 PKG_DIR := ./pkg
 # Added MAIN_DIR or replaced it with WEBAPP_DIR to fix the GO_DIRS variable
 MAIN_DIR := $(WEBAPP_DIR)
-GO_DIRS := $(TEMPLATE_DIR) $(MAIN_DIR) $(PKG_DIR)
+GO_DIRS := $(MAIN_DIR) $(PKG_DIR)
 CLIENT_DIR := ./client
 CLIENT_BUILD_DIR := $(CLIENT_DIR)/dist
 ENVIRONMENT := 'prod'
