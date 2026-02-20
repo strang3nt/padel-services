@@ -223,21 +223,23 @@ func main() {
 	publicFiles, _ := fs.Sub(frontendFiles, "dist")
 	staticServer := http.FS(publicFiles)
 
-	r.NoRoute(func(c *gin.Context) {
+	if os.Getenv("ENVIRONMENT") == "prod" {
+		r.NoRoute(func(c *gin.Context) {
 
-		path := c.Request.URL.Path
+			path := c.Request.URL.Path
 
-		_, err := publicFiles.Open(strings.TrimPrefix(path, "/"))
-		if err == nil {
-			http.FileServer(staticServer).ServeHTTP(c.Writer, c.Request)
-			return
-		}
+			_, err := publicFiles.Open(strings.TrimPrefix(path, "/"))
+			if err == nil {
+				http.FileServer(staticServer).ServeHTTP(c.Writer, c.Request)
+				return
+			}
 
-		index, _ := publicFiles.Open("index.html")
-		stat, _ := index.Stat()
-		content, _ := io.ReadAll(index)
-		http.ServeContent(c.Writer, c.Request, "index.html", stat.ModTime(), bytes.NewReader(content))
-	})
+			index, _ := publicFiles.Open("index.html")
+			stat, _ := index.Stat()
+			content, _ := io.ReadAll(index)
+			http.ServeContent(c.Writer, c.Request, "index.html", stat.ModTime(), bytes.NewReader(content))
+		})
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
