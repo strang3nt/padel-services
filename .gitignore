@@ -31,4 +31,4 @@ go.work.sum
 # .idea/
 .vscode/
 
-template/padel-center-logo.svg
+resources/sql/secrets.sql

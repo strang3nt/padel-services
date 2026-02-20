@@ -1,0 +1,35 @@
+services:
+  frontend:
+    image: node:20
+    working_dir: /app
+    volumes:
+      - ./client:/app
+    ports:
+      - "5173:5173"
+    command: npm run dev
+
+  backend:
+    image: golang:1.25
+    volumes:
+      - .:/app
+      - /app/client
+      - /app/.git
+    working_dir: /app
+    environment:
+      - ENVIRONMENT=dev
+      - DATABASE_URL=postgres://aflori:password@db:5432/padel_services
+    ports:
+      - "8080:8080"
+    command: ./start.development.sh
+
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=padel_services
+      - POSTGRES_USER=aflori
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./resources/sql/create_tables.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./resources/sql/secrets.sql:/docker-entrypoint-initdb.d/secrets.sql
