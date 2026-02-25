@@ -1,4 +1,8 @@
-import { Cell, Checkbox, Section } from '@telegram-apps/telegram-ui';
+import Checkbox from '@mui/material/Checkbox';
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import ListItem from '@mui/material/ListItem';
 import type { FC, ReactNode } from 'react';
 import { Link } from '@/components/Link/Link.tsx';
 import { bem } from '@/css/bem.ts';
@@ -9,8 +13,8 @@ const [, e] = bem('display-data');
 export type DisplayDataRow =
   & { title: string }
   & (
-  | { type: 'link'; value?: string }
-  | { value: ReactNode }
+    | { type: 'link'; value?: string }
+    | { value: ReactNode }
   )
 
 export interface DisplayDataProps {
@@ -20,8 +24,12 @@ export interface DisplayDataProps {
 }
 
 export const DisplayData: FC<DisplayDataProps> = ({ header, rows }) => (
-  <Section header={header}>
-    {rows.map((item, idx) => {
+  <List
+    component="nav"
+    aria-labelledby="nested-list-subheader"
+    subheader={header}
+  >
+    {rows.map((item, _) => {
       let valueNode: ReactNode;
 
       if (item.value === undefined) {
@@ -32,25 +40,22 @@ export const DisplayData: FC<DisplayDataProps> = ({ header, rows }) => (
         } else if (typeof item.value === 'string') {
           valueNode = item.value;
         } else if (typeof item.value === 'boolean') {
-          valueNode = <Checkbox checked={item.value} disabled/>;
+          valueNode = <Checkbox checked={item.value} disabled />;
         } else {
           valueNode = item.value;
         }
       }
 
       return (
-        <Cell
-          className={e('line')}
-          subhead={item.title}
-          readOnly
-          multiline={true}
-          key={idx}
+        <ListItemButton
+          classes={e('line')}
         >
-          <span className={e('line-value')}>
+          <ListItemText>{item.title}</ListItemText>
+          <ListItem classes={e('line-value')}>
             {valueNode}
-          </span>
-        </Cell>
+          </ListItem>
+        </ListItemButton>
       );
     })}
-  </Section>
+  </List>
 );

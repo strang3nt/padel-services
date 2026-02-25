@@ -16,10 +16,11 @@ func queryInsertTeam(ctx context.Context, tx pgx.Tx, team1 tournament.Team) (int
 
 	const sql = `
     WITH upserted_people AS (
-        INSERT INTO person (name)
-        VALUES ($1), ($2)
-        ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name 
-        RETURNING id, name
+				INSERT INTO person (name)
+    		SELECT DISTINCT name 
+    		FROM (VALUES ($1), ($2)) AS input(name)
+    		ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+    		RETURNING id, name
     )
     INSERT INTO team (person1_id, person2_id)
     SELECT 

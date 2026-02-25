@@ -1,11 +1,14 @@
 import { type FC } from 'react';
-import { Cell, List, Placeholder, Section } from '@telegram-apps/telegram-ui';
 import { TournamentData, Tournaments } from './RetrieveTournamentPage';
 import { Page } from '@/components/Page.tsx';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
 import { postEvent } from '@tma.js/sdk-react';
-
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import Section from '@/components/Section';
+import ListItemText from '@mui/material/ListItemText';
+import ListItem from '@mui/material/ListItem';
 export const AvailableTournamentsPage: FC = () => {
   const { bearerToken } = useAuth()
   const location = useLocation();
@@ -42,23 +45,27 @@ export const AvailableTournamentsPage: FC = () => {
   return (
     <Page>
       <Section
-        header={`Tournaments at date ${date}`}
+        title={`Tournaments at date ${date}`}
       >
 
-        {
-          tournaments == null || tournaments.length == 0 ? <Placeholder description="No tournaments found at selected date" /> :
-            <List>
-              {tournaments.map(
-                (tournamentData) =>
-                  <Cell
-                    description={`Participants: ${tournamentData.teams.length}`}
-                    onClick={() => downloadTournament(tournamentData)}
-                  >
-                    {tournamentData.name}
-                  </Cell>
+        <List>
+          {
+            tournaments == null || tournaments.length == 0 ?
+              <ListItem>
+                <ListItemText primary={"No tournaments found at selected date"} />
+              </ListItem> :
+              (
+                tournaments.map(
+                  (tournamentData) =>
 
-              )}      </List>}
-
+                    <ListItemButton
+                      onClick={() => downloadTournament(tournamentData)}
+                    >
+                      <ListItemText primary={tournamentData.name} secondary={`Participants: ${tournamentData.teams.length}`} />
+                    </ListItemButton>
+                )
+              )}
+        </List>
 
       </Section>
     </Page >

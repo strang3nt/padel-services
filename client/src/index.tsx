@@ -1,12 +1,9 @@
-// Include Telegram UI styles first to allow our code override the package CSS.
-import '@telegram-apps/telegram-ui/dist/styles.css';
-
 import ReactDOM from 'react-dom/client';
 import { StrictMode } from 'react';
 import { retrieveLaunchParams } from '@tma.js/sdk-react';
 
 import { Root } from '@/components/Root.tsx';
-import { GenericErrorPage } from '@/pages/GenericErrorPage.tsx';
+import GenericErrorPage from '@/pages/GenericErrorPage.tsx';
 import { init } from '@/init.ts';
 
 import './index.css';
@@ -30,10 +27,10 @@ try {
     .then(() => {
       root.render(
         <StrictMode>
-          <Root/>
+          <Root />
         </StrictMode>,
       );
     });
 } catch (e) {
-  root.render(<GenericErrorPage error='You are not using a supported platform'/>);
+  root.render(<GenericErrorPage error='You are not using a supported platform' />);
 }

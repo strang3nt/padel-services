@@ -1,9 +1,12 @@
 import { useState, type FC } from 'react';
-import { Input, Button, Snackbar } from '@telegram-apps/telegram-ui';
 import { Page } from '@/components/Page.tsx';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
-
+import Snackbar from '@mui/material/Snackbar';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
+import Section from '@/components/Section';
 export interface Person {
   id: string
 }
@@ -66,8 +69,10 @@ export const RetrieveTournamentPage: FC = () => {
         navigate('/available-tournaments', { state: result });
       } else {
         return <Snackbar
-        duration={3}
-        onClose={() => {}}>Server not reachable</Snackbar>
+          autoHideDuration={3000}
+          onClose={() => { }}
+          message="Server not reachable"
+        />
       }
     } catch (error) {
       console.error("Submission error:", error);
@@ -79,18 +84,28 @@ export const RetrieveTournamentPage: FC = () => {
   return (
 
     <Page>
-      <form onSubmit={handleSubmit}>
-        <Input header="Insert date"
-          type="date"
-          required
-          onChange={(e) => setFormData({ date: e.target.value })} />
-        <Button
-          type="submit"
-          disabled={isLoading}>
-          {isLoading ? 'Submitting...' : 'Submit'}
-        </Button>
-      </form>
+      <Section title="Select tournament date">
+        <form onSubmit={handleSubmit}>
+          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              id="outlined-basic"
+              label="Insert date"
+              variant="outlined"
+              type="date"
+
+              required
+              slotProps={{ inputLabel: { shrink: true } }}
+              onChange={(e) => setFormData({ date: e.target.value })}
+            />
+            <Button
+              type="submit"
+              disabled={isLoading}>
+              {isLoading ? 'Submitting...' : 'Submit'}
+            </Button>
+          </Box>
+        </form>
+      </Section>
     </Page>
   );
-
 };
+

@@ -1,19 +1,33 @@
-import { Button, Input, List, Section, Select, Cell, Placeholder, Snackbar } from '@telegram-apps/telegram-ui';
 import { useState, type FC } from 'react';
 import { Form, Outlet, useLoaderData, LoaderFunctionArgs, replace, useNavigate } from 'react-router-dom';
-import { IoIosAdd, IoIosClose, IoIosArrowForward } from "react-icons/io";
 import { Page } from '@/components/Page';
 import { Team } from '@/pages/RetrieveTournamentPage';
 import { useAuth } from '@/components/AuthProvider';
 import { Link } from '@/components/Link/Link';
-import { bem } from '@/css/bem';
 
-const [, e] = bem('display-data');
+import Divider from '@mui/material/Divider';
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import Snackbar from '@mui/material/Snackbar';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import List from '@mui/material/List';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Section from '@/components/Section';
+import AddIcon from '@mui/icons-material/Add';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import ListItem from '@mui/material/ListItem';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import CloseIcon from '@mui/icons-material/Close';
+import FormControl from '@mui/material/FormControl';
+import IconButton from '@mui/material/IconButton';
 
 export const CreateTournamentPage: FC = () => {
   return <Section
-    header="Tournament creation"
-    footer="Complete the steps to create a tournament"
+    title="Tournament creation"
   >
     <Outlet />
   </Section>
@@ -34,57 +48,62 @@ function genderToString(g: number): string {
 }
 
 export const AddTeamsPage: FC = () => {
-
   const loaderData = useLoaderData() as { teams: Team[] } | null;
   const teams = loaderData?.teams || [];
-  const [_, setRefresh] = useState(false)
+  const [_, setRefresh] = useState(false);
 
   const handleDeleteTeam = (index: number) => {
     tournamentStore.removeTeam(index);
-    setRefresh(prev => !prev)
+    setRefresh((prev) => !prev);
   };
 
-  return <Page>
-    <List>
-      <Link to='/create-tournament/add-team'>
-        <Cell
-          after={<IoIosAdd />}
-        >
-          Add Team
-        </Cell>
-      </Link>
-      <Link to='/create-tournament/tournament-type' state={teams}>
-        <Cell
-          after={<IoIosArrowForward />}
-        >
-          Next
-        </Cell>
-      </Link>
-      <Section
-        header='Teams added'
-      >
-        {
-          teams.length == 0 ?
-            <Placeholder
-              description="No teams added yet"
-            />
-            : <List> {teams.map(({
-              person1: { id: teammate1 }, person2: { id: teammate2 }, gender }, i) =>
-              <Cell
-              
-                key={i}
-                after={<IoIosClose />}
-                onClick={() => handleDeleteTeam(i)}
-                subtitle={`${genderToString(gender)} team`}
-              >
-                {`${teammate1}, ${teammate2}`}
-              </Cell>)}
-            </List >
-        }
-      </Section>
-    </List>
-  </Page>
-}
+  return (
+    <Page>
+      <List>
+        <Link to="/create-tournament/add-team">
+          <ListItem disablePadding>
+            <ListItemButton>
+              <ListItemIcon>
+                <AddIcon />
+              </ListItemIcon>
+              <ListItemText primary="Add Team" />
+            </ListItemButton>
+          </ListItem>
+        </Link>
+        <Link to="/create-tournament/tournament-type" state={teams}>
+          <ListItem disablePadding>
+            <ListItemButton>
+              <ListItemIcon>
+                <NavigateNextIcon />
+              </ListItemIcon>
+              <ListItemText primary="Next" />
+            </ListItemButton>
+          </ListItem>
+        </Link>
+      </List>
+      <Divider textAlign="center">Teams Added</Divider>
+      <List>
+        {teams.length === 0 ? (
+          <ListItem>
+            <ListItemText primary="No teams added yet" />
+          </ListItem>
+        ) : (
+          teams.map(({ person1: { id: teammate1 }, person2: { id: teammate2 }, gender }, i) => (
+            <ListItem key={i}>
+              <ListItemText
+                primary={`${teammate1}, ${teammate2}`}
+                secondary={`${genderToString(gender)} team`}
+              />
+              <IconButton onClick={() => handleDeleteTeam(i)}>
+                <CloseIcon />
+              </IconButton>
+            </ListItem>
+          ))
+        )}
+      </List>
+    </Page >
+  );
+};
 
 export const tournamentStore = {
   teams: [] as Team[],
@@ -121,26 +140,41 @@ export const AddTeamPage: FC = () => {
   return (
     <Page>
       <Form method="post">
-        <Input
-          header="First teammate"
-          name="teammate1"
-          type="text"
-          required
-        />
-        <Input
-          header="Second teammate"
-          name="teammate2"
-          type="text"
-          required
-        />
-        <Select header="Select gender" name="gender">
-          <option value={0}>Male</option>
-          <option value={1}>Female</option>
-          <option value={2}>Mixed</option>
-        </Select>
-        <Button type="submit" stretched>Add Team</Button>
+        <FormControl fullWidth variant="outlined">
+          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              label="First teammate"
+              name="teammate1"
+              variant="outlined"
+              required
+            />
+            <TextField
+              label="Second teammate"
+              name="teammate2"
+              variant="outlined"
+              required
+            />
+            <FormControl fullWidth variant="outlined">
+              <InputLabel id="gender-label">Gender</InputLabel>
+              <Select
+                labelId="gender-label"
+                label="Gender"
+                name="gender"
+                defaultValue=""
+              >
+                <MenuItem value={0}>Male</MenuItem>
+                <MenuItem value={1}>Female</MenuItem>
+                <MenuItem value={2}>Mixed</MenuItem>
+              </Select>
+            </FormControl>
+            <Button type="submit" variant="contained"
+              color="primary"
+              size="large"
+              fullWidth>Add Team</Button>
+          </Box>
+        </FormControl>
       </Form>
-    </Page>
+    </Page >
   );
 }
 
@@ -184,7 +218,6 @@ export const ChooseTournamentType: FC = () => {
 
     return [0, 0.0, 0]
   }
-
   const [formData, setFormData] = useState<FormData>({
     availableCourts: 0,
     roundsNumber: 0,
@@ -215,7 +248,6 @@ export const ChooseTournamentType: FC = () => {
             body: JSON.stringify(teams)
           }).then(response => {
             if (response.ok) {
-
               setOpen(
                 {
                   title: "Tournament creation success",
@@ -234,88 +266,104 @@ export const ChooseTournamentType: FC = () => {
             }
           })
         }
-        return <List>
-          <Input
-            header="Courts available"
-            name="courtsAvailable"
-            type="number"
-            onChange={(e) => setFormData({
-              ...formData,
-              availableCourts: parseInt(e.target.value, 10)
-            })}
-            required
-          />
-          <Input
-            header="Number of rounds"
-            name="roundsNumber"
-            type="number"
-            onChange={(e) => setFormData({
-              ...formData,
-              roundsNumber: parseInt(e.target.value, 10)
-            })}
-            required
-          />
-          <span className={e('line-value')}>
-            {
-              (() => {
-                let totalMatches, matchesPerTurn, matchesPerTeam;
-                [totalMatches, matchesPerTurn, matchesPerTeam] = getMatchesPerTeam(tournamentStore.teams.length, formData.roundsNumber, formData.availableCourts)
-                if (totalMatches == 0) {
-                  return "Configuration is not valid"
-                } else {
-                  return `Current configuration translates to ${matchesPerTeam} matches per team and at most ${Math.ceil(matchesPerTurn)} matches per turn.`
-                }
+        return <>
+          <ListItem>
+            <TextField
+              label="Courts available"
+              name="courtsAvailable"
+              type="number"
+              onChange={(e) => setFormData({
+                ...formData,
+                availableCourts: parseInt(e.target.value, 10)
+              })}
+              required
+            />
+          </ListItem>
+          <ListItem>
+            <TextField
+              label="Number of rounds"
+              name="roundsNumber"
+              type="number"
+              helperText=
+              {
+                (() => {
+                  let totalMatches, matchesPerTurn, matchesPerTeam;
+                  [totalMatches, matchesPerTurn, matchesPerTeam] = getMatchesPerTeam(tournamentStore.teams.length, formData.roundsNumber, formData.availableCourts)
+                  if (totalMatches == 0) {
+                    return "Configuration is not valid"
+                  } else {
+                    return `Current configuration translates to ${matchesPerTeam} matches per team and at most ${Math.ceil(matchesPerTurn)} matches per turn.`
+                  }
 
-              })()
-            }
-          </span>
-          <Button stretched onClick={() => sendRodeoTournament(
-            selectedTournament,
-            new Date(formData.tournamentDate),
-            tournamentStore.teams,
-            formData.roundsNumber,
-            formData.availableCourts
+                })()
+              }
+              onChange={(e) => setFormData({
+                ...formData,
+                roundsNumber: parseInt(e.target.value, 10)
+              })}
+              required
+            />
+          </ListItem>
+          <ListItem>
+            <Button fullWidth onClick={() => sendRodeoTournament(
+              selectedTournament,
+              new Date(formData.tournamentDate),
+              tournamentStore.teams,
+              formData.roundsNumber,
+              formData.availableCourts
 
-          )}>Send</Button>
-        </List>
-
+            )}>Send</Button>
+          </ListItem>
+        </>
       default:
         return "Tournament type not supported";
     }
   }
 
   return <Page>
-    {open && <Snackbar
+    <Snackbar
+      open={(() => open != null)()}
+      autoHideDuration={3000}
       onClose={() => {
         setOpen(null);
         open?.onClose?.();
       }}
-      children={open.title}
-      description={open.description}
-    />}
+      message={`${open?.description}`}
+    />
     <Form>
-      <Select
-        header="Select"
-        name="tournamentType"
-        value={selectedTournament}
-        onChange={e => setTournament(e.target.value)}
-      >
-        <option>Rodeo</option>
-      </Select>
-      <Input
-        header="Tournament date"
-        name="tournamentDate"
-        type="date"
-        onChange={(e) => setFormData({
-          ...formData,
-          tournamentDate: e.target.value
-        })
-        }
-        required
-      />
-      {
-        renderSwitch()
-      }
+      <FormControl fullWidth variant="outlined">
+        <List>
+          <ListItem>
+            <Select
+              labelId="gender-label"
+              label="Tournament Type"
+              name="tournamentType"
+              defaultValue="Rodeo"
+              value={selectedTournament}
+              onChange={e => setTournament(e.target.value)}
+            >
+              <MenuItem value={"Rodeo"}>Rodeo</MenuItem>
+            </Select>
+          </ListItem>
+          <ListItem>
+            <TextField
+              label="Tournament date"
+              name="tournamentDate"
+              type="date"
+              slotProps={{ inputLabel: { shrink: true } }}
+              onChange={(e) => setFormData({
+                ...formData,
+                tournamentDate: e.target.value
+              })
+              }
+              required
+            />
+          </ListItem>
+          {
+            renderSwitch()
+          }
+        </List>
+      </FormControl>
     </Form>
   </Page>
 }
