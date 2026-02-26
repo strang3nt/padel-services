@@ -1,32 +1,31 @@
-import { useState, type FC } from 'react';
-import { Page } from '@/components/Page.tsx';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/components/AuthProvider';
-import Snackbar from '@mui/material/Snackbar';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Box from '@mui/material/Box';
-import Section from '@/components/Section';
+import { useState, type FC } from "react";
+import { Page } from "@/components/Page.tsx";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/components/AuthProvider";
+import Snackbar from "@mui/material/Snackbar";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Box from "@mui/material/Box";
+import Section from "@/components/Section";
 export interface Person {
-  id: string
+  id: string;
 }
 
 export interface Team {
-  person1: Person
-  person2: Person
-  gender: number
+  person1: Person;
+  person2: Person;
+  gender: number;
 }
 
 export interface Match {
-
-  teamA: Team
-  teamB: Team
-  matchStatus: number
-  courtId: number
+  teamA: Team;
+  teamB: Team;
+  matchStatus: number;
+  courtId: number;
 }
 
 export interface Matches {
-  matches: Match[]
+  matches: Match[];
 }
 
 export interface TournamentData {
@@ -37,8 +36,8 @@ export interface TournamentData {
 }
 
 export interface Tournaments {
-  date: string
-  tournaments: TournamentData[]
+  date: string;
+  tournaments: TournamentData[];
 }
 
 interface FormData {
@@ -46,8 +45,8 @@ interface FormData {
 }
 
 export const RetrieveTournamentPage: FC = () => {
-  const { bearerToken } = useAuth()
-  const [formData, setFormData] = useState<FormData>({ date: '' });
+  const { bearerToken } = useAuth();
+  const [formData, setFormData] = useState<FormData>({ date: "" });
   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -57,22 +56,21 @@ export const RetrieveTournamentPage: FC = () => {
     setIsLoading(true);
 
     try {
+      const response = await fetch(`/api/tournaments?date=${formData.date}`, {
+        headers: { Authorization: `Bearer ${bearerToken}` },
+      });
 
-      const response = await fetch(
-        `/api/tournaments?date=${formData.date}`,
-        {
-          headers: { Authorization: `Bearer ${bearerToken}` }
-        })
-
-      const result = await response.json() as Tournaments
+      const result = (await response.json()) as Tournaments;
       if (response.ok) {
-        navigate('/available-tournaments', { state: result });
+        navigate("/available-tournaments", { state: result });
       } else {
-        return <Snackbar
-          autoHideDuration={3000}
-          onClose={() => { }}
-          message="Server not reachable"
-        />
+        return (
+          <Snackbar
+            autoHideDuration={3000}
+            onClose={() => {}}
+            message="Server not reachable"
+          />
+        );
       }
     } catch (error) {
       console.error("Submission error:", error);
@@ -82,25 +80,32 @@ export const RetrieveTournamentPage: FC = () => {
   };
 
   return (
-
     <Page>
       <Section title="Select tournament date">
-        <form onSubmit={handleSubmit}>
-          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <form
+          onSubmit={(event) => {
+            void handleSubmit(event);
+          }}
+        >
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+            }}
+          >
             <TextField
               id="outlined-basic"
               label="Insert date"
               variant="outlined"
               type="date"
-
               required
               slotProps={{ inputLabel: { shrink: true } }}
               onChange={(e) => setFormData({ date: e.target.value })}
             />
-            <Button
-              type="submit"
-              disabled={isLoading}>
-              {isLoading ? 'Submitting...' : 'Submit'}
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Submitting..." : "Submit"}
             </Button>
           </Box>
         </form>
@@ -108,4 +113,3 @@ export const RetrieveTournamentPage: FC = () => {
     </Page>
   );
 };
-

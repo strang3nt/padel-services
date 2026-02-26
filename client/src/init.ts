@@ -10,7 +10,7 @@ import {
   mockTelegramEnv,
   emitEvent,
   retrieveLaunchParams,
-} from '@tma.js/sdk-react';
+} from "@tma.js/sdk-react";
 
 /**
  * Initializes the application and configures its dependencies.
@@ -25,30 +25,39 @@ export async function init(options: {
   initSDK();
 
   // Add Eruda if needed.
-  options.eruda && void import('eruda').then(({ default: eruda }) => {
-    eruda.init();
-    eruda.position({ x: window.innerWidth - 50, y: 0 });
-  });
+  options.eruda &&
+    void import("eruda").then(({ default: eruda }) => {
+      eruda.init();
+      eruda.position({ x: window.innerWidth - 50, y: 0 });
+    });
 
   if (options.mockForMacOS) {
     let firstThemeSent = false;
     mockTelegramEnv({
       onEvent(event, next) {
-        if (event.name === 'web_app_request_theme') {
+        if (event.name === "web_app_request_theme") {
           let tp: Partial<ThemeParams> = {};
           if (firstThemeSent) {
             const state = themeParams.state;
-            tp = state as unknown as Partial<ThemeParams>;
+            tp = state as Partial<ThemeParams>;
           } else {
             firstThemeSent = true;
             const lp = retrieveLaunchParams();
             tp = (lp.tgWebAppThemeParams || {}) as Partial<ThemeParams>;
           }
-          return emitEvent('theme_changed', { theme_params: tp as any });
+
+          // eslint-disable-next-line
+          const emitData = { theme_params: tp as any };
+          return emitEvent("theme_changed", emitData);
         }
 
-        if (event.name === 'web_app_request_safe_area') {
-          return emitEvent('safe_area_changed', { left: 0, top: 0, right: 0, bottom: 0 });
+        if (event.name === "web_app_request_safe_area") {
+          return emitEvent("safe_area_changed", {
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+          });
         }
 
         next();
@@ -59,7 +68,6 @@ export async function init(options: {
   // Mount all components used in the project.
   backButton.mount.ifAvailable();
   initData.restore();
-
   if (miniApp.mount.isAvailable()) {
     themeParams.mount();
     miniApp.mount();
@@ -67,8 +75,11 @@ export async function init(options: {
   }
 
   if (viewport.mount.isAvailable()) {
-    viewport.mount().then(() => {
+    return viewport.mount().then(() => {
       viewport.bindCssVars();
     });
   }
+
+  // satisfy eslint
+  return Promise.resolve();
 }
