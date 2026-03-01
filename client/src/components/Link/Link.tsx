@@ -2,9 +2,16 @@ import { openLink } from "@tma.js/sdk-react";
 import { type FC, type MouseEventHandler, useCallback } from "react";
 import { Link as RouterLink, type LinkProps } from "react-router-dom";
 
+import { classNames } from "@/css/classnames.ts";
+
 import "./Link.css";
 
-export const Link: FC<LinkProps> = ({ onClick: propsOnClick, to, ...rest }) => {
+export const Link: FC<LinkProps> = ({
+  className,
+  onClick: propsOnClick,
+  to,
+  ...rest
+}) => {
   const onClick = useCallback<MouseEventHandler<HTMLAnchorElement>>(
     (e) => {
       propsOnClick?.(e);
@@ -33,5 +40,12 @@ export const Link: FC<LinkProps> = ({ onClick: propsOnClick, to, ...rest }) => {
     [to, propsOnClick],
   );
 
-  return <RouterLink {...rest} to={to} onClick={onClick} />;
+  return (
+    <RouterLink
+      {...rest}
+      to={to}
+      onClick={onClick}
+      className={classNames(className, "link")}
+    />
+  );
 };
