@@ -7,6 +7,7 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Section from "@/components/Section";
+
 export interface Person {
   id: string;
 }

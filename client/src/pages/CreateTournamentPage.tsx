@@ -7,7 +7,6 @@ import {
   replace,
   useNavigate,
 } from "react-router-dom";
-import { Page } from "@/components/Page";
 import { Team } from "@/pages/RetrieveTournamentPage";
 import { useAuth } from "@/components/AuthProvider";
 import { Link } from "@/components/Link/Link";
@@ -31,12 +30,15 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import CloseIcon from "@mui/icons-material/Close";
 import FormControl from "@mui/material/FormControl";
 import IconButton from "@mui/material/IconButton";
+import { Page } from "@/components/Page";
 
 export const CreateTournamentPage: FC = () => {
   return (
-    <Section title="Tournament creation">
-      <Outlet />
-    </Section>
+    <Page>
+      <Section title="Tournament creation">
+        <Outlet />
+      </Section>
+    </Page>
   );
 };
 
@@ -64,9 +66,8 @@ export const AddTeamsPage: FC = () => {
   };
 
   return (
-    <Page>
+    <>
       <List>
-        :{" "}
         <Link to="/create-tournament/add-team">
           <ListItem disablePadding>
             <ListItemButton>
@@ -117,7 +118,7 @@ export const AddTeamsPage: FC = () => {
           )
         )}
       </List>
-    </Page>
+    </>
   );
 };
 
@@ -153,55 +154,45 @@ export async function addTeamAction({ request }: LoaderFunctionArgs) {
 
 export const AddTeamPage: FC = () => {
   return (
-    <Page>
-      <Form method="post">
-        <FormControl fullWidth variant="outlined">
-          <Box
-            sx={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-            }}
+    <Form method="post">
+      <Box
+        sx={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        <TextField
+          label="First teammate"
+          name="teammate1"
+          variant="outlined"
+          required
+        />
+        <TextField
+          label="Second teammate"
+          name="teammate2"
+          variant="outlined"
+          required
+        />
+        <FormControl>
+          <InputLabel id="gender-label">Gender</InputLabel>
+          <Select
+            labelId="gender-label"
+            label="Gender"
+            name="gender"
+            defaultValue=""
           >
-            <TextField
-              label="First teammate"
-              name="teammate1"
-              variant="outlined"
-              required
-            />
-            <TextField
-              label="Second teammate"
-              name="teammate2"
-              variant="outlined"
-              required
-            />
-            <FormControl fullWidth variant="outlined">
-              <InputLabel id="gender-label">Gender</InputLabel>
-              <Select
-                labelId="gender-label"
-                label="Gender"
-                name="gender"
-                defaultValue=""
-              >
-                <MenuItem value={0}>Male</MenuItem>
-                <MenuItem value={1}>Female</MenuItem>
-                <MenuItem value={2}>Mixed</MenuItem>
-              </Select>
-            </FormControl>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-            >
-              Add Team
-            </Button>
-          </Box>
+            <MenuItem value={0}>Male</MenuItem>
+            <MenuItem value={1}>Female</MenuItem>
+            <MenuItem value={2}>Mixed</MenuItem>
+          </Select>
         </FormControl>
-      </Form>
-    </Page>
+        <Button type="submit" size="large" fullWidth>
+          Add Team
+        </Button>
+      </Box>
+    </Form>
   );
 };
 
@@ -302,63 +293,57 @@ export const ChooseTournamentType: FC = () => {
         };
         return (
           <>
-            <ListItem>
-              <TextField
-                label="Courts available"
-                name="courtsAvailable"
-                type="number"
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    availableCourts: parseInt(e.target.value, 10),
-                  })
-                }
-                required
-              />
-            </ListItem>
-            <ListItem>
-              <TextField
-                label="Number of rounds"
-                name="roundsNumber"
-                type="number"
-                helperText={(() => {
-                  const [totalMatches, matchesPerTurn, matchesPerTeam] =
-                    getMatchesPerTeam(
-                      tournamentStore.teams.length,
-                      formData.roundsNumber,
-                      formData.availableCourts,
-                    );
-                  if (totalMatches == 0) {
-                    return "Configuration is not valid";
-                  } else {
-                    return `Current configuration translates to ${matchesPerTeam} matches per team and at most ${Math.ceil(matchesPerTurn)} matches per turn.`;
-                  }
-                })()}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    roundsNumber: parseInt(e.target.value, 10),
-                  })
-                }
-                required
-              />
-            </ListItem>
-            <ListItem>
-              <Button
-                fullWidth
-                onClick={() =>
-                  sendRodeoTournament(
-                    selectedTournament,
-                    new Date(formData.tournamentDate),
-                    tournamentStore.teams,
+            <TextField
+              label="Courts available"
+              name="courtsAvailable"
+              type="number"
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  availableCourts: parseInt(e.target.value, 10),
+                })
+              }
+              required
+            />
+            <TextField
+              label="Number of rounds"
+              name="roundsNumber"
+              type="number"
+              helperText={(() => {
+                const [totalMatches, matchesPerTurn, matchesPerTeam] =
+                  getMatchesPerTeam(
+                    tournamentStore.teams.length,
                     formData.roundsNumber,
                     formData.availableCourts,
-                  )
+                  );
+                if (totalMatches == 0) {
+                  return "Configuration is not valid";
+                } else {
+                  return `Current configuration translates to ${matchesPerTeam} matches per team and at most ${Math.ceil(matchesPerTurn)} matches per turn.`;
                 }
-              >
-                Send
-              </Button>
-            </ListItem>
+              })()}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  roundsNumber: parseInt(e.target.value, 10),
+                })
+              }
+              required
+            />
+            <Button
+              fullWidth
+              onClick={() =>
+                sendRodeoTournament(
+                  selectedTournament,
+                  new Date(formData.tournamentDate),
+                  tournamentStore.teams,
+                  formData.roundsNumber,
+                  formData.availableCourts,
+                )
+              }
+            >
+              Send
+            </Button>
           </>
         );
       }
@@ -368,7 +353,7 @@ export const ChooseTournamentType: FC = () => {
   };
 
   return (
-    <Page>
+    <>
       <Snackbar
         open={(() => open != null)()}
         autoHideDuration={3000}
@@ -379,39 +364,43 @@ export const ChooseTournamentType: FC = () => {
         message={`${open?.description}`}
       />
       <Form>
-        <FormControl fullWidth variant="outlined">
-          <List>
-            <ListItem>
-              <Select
-                labelId="gender-label"
-                label="Tournament Type"
-                name="tournamentType"
-                defaultValue="Rodeo"
-                value={selectedTournament}
-                onChange={(e) => setTournament(e.target.value)}
-              >
-                <MenuItem value={"Rodeo"}>Rodeo</MenuItem>
-              </Select>
-            </ListItem>
-            <ListItem>
-              <TextField
-                label="Tournament date"
-                name="tournamentDate"
-                type="date"
-                slotProps={{ inputLabel: { shrink: true } }}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    tournamentDate: e.target.value,
-                  })
-                }
-                required
-              />
-            </ListItem>
-            {renderSwitch()}
-          </List>
-        </FormControl>
+        <Box
+          sx={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          <FormControl>
+            <InputLabel id="tournament-label">Tournament type</InputLabel>
+            <Select
+              labelId="tournament-label"
+              label="Tournament Type"
+              name="tournamentType"
+              defaultValue="Rodeo"
+              value={selectedTournament}
+              onChange={(e) => setTournament(e.target.value)}
+            >
+              <MenuItem value={"Rodeo"}>Rodeo</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            label="Tournament date"
+            name="tournamentDate"
+            type="date"
+            slotProps={{ inputLabel: { shrink: true } }}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                tournamentDate: e.target.value,
+              })
+            }
+            required
+          />
+          {renderSwitch()}
+        </Box>
       </Form>
-    </Page>
+    </>
   );
 };

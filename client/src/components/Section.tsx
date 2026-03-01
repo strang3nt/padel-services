@@ -6,18 +6,30 @@ import { PropsWithChildren } from "react";
 function Section({ children, title }: PropsWithChildren<{ title: string }>) {
   return (
     <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      sx={{ backgroundColor: "background.default" }}
+      component="section"
+      sx={{
+        width: "100%",
+        py: 4,
+        px: 2,
+        boxSizing: "border-box",
+      }}
     >
-      <Stack spacing={2} alignItems="center">
-        <Box textAlign="center">
-          <Typography variant="h6" component="h1" color="text.primary">
-            {title}
-          </Typography>
-          {children}
-        </Box>
+      <Stack spacing={3} alignItems="stretch" sx={{ width: "100%" }}>
+        <Typography
+          variant="h5"
+          component="h1"
+          align="center"
+          sx={{
+            fontWeight: 700,
+            letterSpacing: "0.02em",
+            textTransform: "capitalize",
+            mb: 1,
+          }}
+        >
+          {title}
+        </Typography>
+
+        <Box sx={{ width: "100%" }}>{children}</Box>
       </Stack>
     </Box>
   );
