@@ -1,21 +1,28 @@
-import { initData, useSignal } from '@tma.js/sdk-react';
-import { createContext, FC, ReactNode, useContext, useEffect, useState } from 'react';
+import { initData, useSignal } from "@tma.js/sdk-react";
+import {
+  createContext,
+  FC,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface ContextContent {
-  bearerToken: string | null
-  loading: boolean,
-  error: string | null
+  bearerToken: string | null;
+  loading: boolean;
+  error: string | null;
 }
 
 interface ResponseContent {
-  token: string
-  id: string
+  token: string;
+  id: string;
 }
 
 const AuthContext = createContext<ContextContent>({
   bearerToken: null,
   loading: true,
-  error: null
+  error: null,
 });
 
 export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
@@ -27,38 +34,34 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Get data from Telegram WebApp global
-
         if (!initData) {
-          throw new Error("Not a Telegram client");
+          setError("Not a Telegram client");
+          return;
         }
 
-        const response: Response = await fetch('/auth', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response: Response = await fetch("/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ initDataRaw }),
-        })
-
-        if (response.status === 403) {
-          setError("Access denied: user not allowed.")
-        }
+        });
 
         if (!response.ok) {
-          setError("Authentication failed")
-        } else {
-          const data = await response.json().then(x => x as ResponseContent)
-          setBearerToken(data.token)
+          const msg = response.status === 403 ? "Access denied" : "Auth failed";
+          setError(msg);
         }
-      } catch (err) {
-        setError(`Access denied: ${err}.`)
 
+        const data = await response.json().then((x) => x as ResponseContent);
+        setBearerToken(data.token);
+      } catch (err) {
+        console.error(err);
+        setError(`Unknown error occurred`);
       } finally {
         setLoading(false);
       }
     };
 
-    initAuth();
-  }, []);
+    void initAuth();
+  }, [initData, initDataRaw]);
 
   return (
     <AuthContext.Provider value={{ bearerToken, loading, error }}>

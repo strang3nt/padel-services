@@ -1,32 +1,33 @@
-import { Section, Cell } from '@telegram-apps/telegram-ui';
-import { type FC } from 'react';
+import { type FC } from "react";
 
-import { Link } from '@/components/Link/Link.tsx';
-import { Page } from '@/components/Page.tsx';
+import { Link } from "@/components/Link/Link.tsx";
+import { Page } from "@/components/Page.tsx";
 
-export const MenuPage: FC = () => {
-
-  return (
-    <Page back={false}>
-        <Section
-          header="Menu"
-          footer="Select item to access its functionality"
-        >
-
-          <Link to="/create-tournament">
-            <Cell 
-            subtitle="Input data to create tournament"
-            >Create tournament
-            </Cell>
-          </Link>
-
-          <Link to="/retrieve-tournament">
-            <Cell 
-            subtitle="Retrieve tournament pairings and, if available, results"
-            >Retrieve tournament
-            </Cell>
-          </Link>
-        </Section>
-    </Page>
-  );
-};
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import Section from "@/components/Section";
+export const MenuPage: FC = () => (
+  <Page back={false}>
+    <Section title="Menu">
+      <List>
+        <Link to="/create-tournament">
+          <ListItemButton>
+            <ListItemText
+              primary="Create tournament"
+              secondary="Input data to create tournament"
+            />
+          </ListItemButton>
+        </Link>
+        <Link to="/retrieve-tournament">
+          <ListItemButton>
+            <ListItemText
+              primary="Retrieve tournament"
+              secondary="Retrieve tournament pairings and, if available, results"
+            />
+          </ListItemButton>
+        </Link>
+      </List>
+    </Section>
+  </Page>
+);

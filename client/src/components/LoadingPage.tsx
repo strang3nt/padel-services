@@ -1,11 +1,9 @@
-import errorImage from '../../assets/error.svg'
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import { type FC } from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 
-
-const GenericErrorPage: FC<{ error: unknown }> = ({ error }) => {
+function LoadingPage({ title = "Loading Content", message = "Please wait a moment..." }) {
   return (
     <Box
       display="flex"
@@ -15,19 +13,14 @@ const GenericErrorPage: FC<{ error: unknown }> = ({ error }) => {
       sx={{ backgroundColor: 'background.default' }}
     >
       <Stack spacing={2} alignItems="center">
+        <CircularProgress size={60} thickness={4} color="primary" />
+
         <Box textAlign="center">
           <Typography variant="h6" component="h1" color="text.primary">
-            "Oops"
+            {title}
           </Typography>
-
-
-          <img
-            alt="Error image"
-            src={errorImage}
-            style={{ display: 'block', width: '144px', height: '144px' }}
-          />
           <Typography variant="body2" color="text.secondary">
-            {JSON.stringify(error)}
+            {message}
           </Typography>
         </Box>
       </Stack>
@@ -35,5 +28,4 @@ const GenericErrorPage: FC<{ error: unknown }> = ({ error }) => {
   );
 };
 
-export default GenericErrorPage
-
+export default LoadingPage

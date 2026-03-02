@@ -1,16 +1,16 @@
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
-import { Placeholder, Spinner } from '@telegram-apps/telegram-ui';
+import LoadingPage from '@/components/LoadingPage';
 
 export const ProtectedRoute = () => {
   const { loading, error } = useAuth();
 
   if (error) throw new Error(`${error}`)
-  if (loading) return <Placeholder
-    header="Validating session"
-  >
-    <Spinner size="l" />
-  </Placeholder>
+  if (loading) return <LoadingPage
+    title=""
+    message="Validating session"
+  />
 
   return <Outlet />;
 };
+
