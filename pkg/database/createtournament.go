@@ -18,7 +18,7 @@ func queryInsertTeam(ctx context.Context, tx pgx.Tx, team1 tournament.Team) (int
     WITH upserted_people AS (
 				INSERT INTO person (name)
     		SELECT DISTINCT name 
-    		FROM (VALUES ($1), ($2)) AS input(name)
+				FROM (VALUES ($1::TEXT), ($2::TEXT)) AS input(name)
     		ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
     		RETURNING id, name
     )
