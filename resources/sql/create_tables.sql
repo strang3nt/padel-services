@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS tournament
     id serial NOT NULL,
     tournament_date timestamp without time zone NOT NULL,
     tournament_type_id integer,
-    user_id integer NOT NULL,
+    user_id bigint NOT NULL,
     CONSTRAINT tournament_pkey PRIMARY KEY (id)
 );
 
