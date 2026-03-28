@@ -146,16 +146,21 @@ func main() {
 				return
 			}
 
+			teamsPtr := make([]*tournament.Team, 0, len(teams))
+			for _, team := range teams {
+				teamsPtr = append(teamsPtr, &team)
+			}
+
 			tournament := services.CreateTournament(
 				tournamentType,
 				dateStart,
-				teams,
+				teamsPtr,
 				int(totalRounds),
 				int(availableCourts),
 			)
 
 			if tournament != nil {
-				err = database.CreateTournament(ctx, conn, int64(userId), &tournament)
+				err = database.CreateTournament(ctx, conn, int64(userId), tournament)
 				if err != nil {
 					log.Println("error while saving tournament: ", err)
 					c.JSON(500, gin.H{"error": "could not save tournament"})

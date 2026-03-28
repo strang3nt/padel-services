@@ -13,7 +13,7 @@ import (
 func CreateTournament(
 	tournamentType string,
 	dateStart time.Time,
-	teams []tournament.Team,
+	teams []*tournament.Team,
 	totalRounds, availableCourts int) tournament.Tournament {
 
 	switch tournamentType {
@@ -40,8 +40,8 @@ func CreateTournament(
 	}
 }
 
-func MakeTeamsFromMessage(stringteams *bufio.Scanner) ([]tournament.Team, error) {
-	var teams []tournament.Team
+func MakeTeamsFromMessage(stringteams *bufio.Scanner) ([]*tournament.Team, error) {
+	var teams []*tournament.Team
 
 	for stringteams.Scan() {
 		line := stringteams.Text()
@@ -60,8 +60,8 @@ func MakeTeamsFromMessage(stringteams *bufio.Scanner) ([]tournament.Team, error)
 		if len(row) >= 3 {
 			g = tournament.GenderFromString(strings.TrimSpace(row[2]))
 		}
-
-		teams = append(teams, tournament.MakeTeam(person1, person2, g))
+		team := tournament.MakeTeam(person1, person2, g)
+		teams = append(teams, &team)
 	}
 
 	return teams, nil

@@ -173,8 +173,8 @@ func buildTournamentData(
 			team1 := teamsMap[t.team1]
 			team2 := teamsMap[t.team2]
 			round = append(round, tournament.Match{
-				TeamA:       *team1,
-				TeamB:       *team2,
+				TeamA:       team1,
+				TeamB:       team2,
 				MatchStatus: tournament.MatchScheduled,
 				CourtId:     t.court_number})
 		}

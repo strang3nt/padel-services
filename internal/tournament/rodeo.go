@@ -9,7 +9,7 @@ import (
 type Rodeo struct {
 	Name      string
 	DateStart time.Time
-	Teams     []Team
+	Teams     []*Team
 	Rounds    []Round
 }
 
@@ -21,7 +21,7 @@ func (rodeo *Rodeo) GetDateStart() time.Time {
 	return rodeo.DateStart
 }
 
-func (rodeo *Rodeo) GetTeams() []Team {
+func (rodeo *Rodeo) GetTeams() []*Team {
 	return rodeo.Teams
 }
 
@@ -29,7 +29,7 @@ func (rodeo *Rodeo) GetRounds() []Round {
 	return rodeo.Rounds
 }
 
-func NewRodeo(name string, dateStart time.Time, teams []Team, rounds []Round) *Rodeo {
+func NewRodeo(name string, dateStart time.Time, teams []*Team, rounds []Round) *Rodeo {
 	return &Rodeo{
 		Name:      name,
 		DateStart: dateStart,
@@ -38,7 +38,7 @@ func NewRodeo(name string, dateStart time.Time, teams []Team, rounds []Round) *R
 	}
 }
 
-func MakeRodeo(name string, dateStart time.Time, teams []Team, rounds []Round) Rodeo {
+func MakeRodeo(name string, dateStart time.Time, teams []*Team, rounds []Round) Rodeo {
 	return Rodeo{
 
 		Name:      name,

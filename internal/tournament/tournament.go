@@ -25,8 +25,8 @@ const (
 )
 
 type Match struct {
-	TeamA       Team        `json:"teamA"`
-	TeamB       Team        `json:"teamB"`
+	TeamA       *Team       `json:"teamA"`
+	TeamB       *Team       `json:"teamB"`
 	MatchStatus MatchStatus `json:"matchStatus"`
 	CourtId     int         `json:"courtId"`
 }
@@ -34,7 +34,7 @@ type Match struct {
 type Tournament interface {
 	GetName() string
 	GetDateStart() time.Time
-	GetTeams() []Team
+	GetTeams() []*Team
 	GetRounds() []Round
 	GetTournamentType() TournamentType
 }

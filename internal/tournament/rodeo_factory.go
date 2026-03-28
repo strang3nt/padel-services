@@ -18,7 +18,7 @@ type RodeoFactory struct {
 func (rf *RodeoFactory) GetFirstValidTournament(
 	timeout time.Duration,
 	count int,
-	teams []Team,
+	teams []*Team,
 	start time.Time,
 ) (*Rodeo, error) {
 
@@ -51,7 +51,7 @@ func (rf *RodeoFactory) GetFirstValidTournament(
 
 func (rf *RodeoFactory) MakeTournament(
 	ctx context.Context,
-	teams []Team,
+	teams []*Team,
 	dateStart time.Time) (*Rodeo, error) {
 	n := len(teams)
 	nodes := make([]int, n)
@@ -69,7 +69,9 @@ func (rf *RodeoFactory) MakeTournament(
 	}
 
 	if totalMatches == 0 {
-		return nil, errors.New("could not determine valid match parameters. Returning empty tournament")
+		return nil, errors.New(
+			"could not determine valid match parameters. Returning empty tournament",
+		)
 	}
 
 	graph, teams := rf.getGraph(teams, matchesPerTeam)
@@ -93,7 +95,14 @@ func (rf *RodeoFactory) MakeTournament(
 		}
 	}
 
-	err = validateTournamentRounds(rounds, teams, roundsNumber, matchesPerTurn, totalMatches, matchesPerTeam)
+	err = validateTournamentRounds(
+		rounds,
+		teams,
+		roundsNumber,
+		matchesPerTurn,
+		totalMatches,
+		matchesPerTeam,
+	)
 	if err != nil {
 		log.Printf("Validation error: %v", err)
 		return nil, err
@@ -126,14 +135,14 @@ func (rf *RodeoFactory) MakeTournament(
 	return NewRodeo("Rodeo", dateStart, teams, turns), nil
 }
 
-func (rf *RodeoFactory) getGraph(teams []Team, matchesPerTeam int) (*Graph, []Team) {
+func (rf *RodeoFactory) getGraph(teams []*Team, matchesPerTeam int) (*Graph, []*Team) {
 
 	graph := NewGraph()
 	allMatches := make(matching)
-	var teamsOrdered []Team
+	var teamsOrdered []*Team
 
 	if canAllGendersPlayOnlyAgainstEachOther(teams, matchesPerTeam) {
-		teamsSeparatedByGender := make([]Team, 0, len(teams))
+		teamsSeparatedByGender := make([]*Team, 0, len(teams))
 		nodesByGender := make(map[Gender][]int)
 		currNode := 0
 		for _, g := range GetAllGenders() {
@@ -168,7 +177,7 @@ func (rf *RodeoFactory) getGraph(teams []Team, matchesPerTeam int) (*Graph, []Te
 	return graph, teamsOrdered
 }
 
-func canAllGendersPlayOnlyAgainstEachOther(teams []Team, matchesPerTeam int) bool {
+func canAllGendersPlayOnlyAgainstEachOther(teams []*Team, matchesPerTeam int) bool {
 	genderCounts := make(map[Gender]int)
 
 	for _, g := range GetAllGenders() {
@@ -365,8 +374,9 @@ func NewRodeoFactory(turns, availableCourts int) *RodeoFactory {
 	}
 }
 
-func prepend(tms []Team, t Team) []Team {
-	tms = append(tms, Team{})
+func prepend(tms []*Team, t *Team) []*Team {
+	empty_team := Team{}
+	tms = append(tms, &empty_team)
 	copy(tms[1:], tms)
 	tms[0] = t
 	return tms
@@ -378,15 +388,15 @@ func prepend(tms []Team, t Team) []Team {
 // the ordering is built like this because it leverages some aspects of the
 // the match-making algorithm: teams will be paired against the nearest neighbors
 // to their left and right.
-func orderTeamsByGender(teams []Team) []Team {
+func orderTeamsByGender(teams []*Team) []*Team {
 
-	genderBuckets := make(map[Gender][]Team)
+	genderBuckets := make(map[Gender][]*Team)
 
 	for _, team := range teams {
 		genderBuckets[team.TeamGender] = append(genderBuckets[team.TeamGender], team)
 	}
 
-	var orderedTeams []Team
+	var orderedTeams []*Team
 	orderedTeams = append(orderedTeams, genderBuckets[Female]...)
 
 	top := true
@@ -415,7 +425,11 @@ func orderTeamsByGender(teams []Team) []Team {
 }
 
 func (rf *RodeoFactory) makeMatchingsBacktracking(
-	ctx context.Context, initialEdges Graph, avgMatchingSize float64, totalMatchings int) (matchings, error) {
+	ctx context.Context,
+	initialEdges Graph,
+	avgMatchingSize float64,
+	totalMatchings int,
+) (matchings, error) {
 
 	maxMatchingSize := int(math.Ceil(avgMatchingSize))
 
@@ -439,7 +453,15 @@ func (rf *RodeoFactory) makeMatchingsBacktracking(
 		remainingEdges[e] = struct{}{}
 	}
 
-	result, success := rf.solveRecursive(ctx, edgeList, remainingEdges, 0, buckets, usedNodes, maxMatchingSize)
+	result, success := rf.solveRecursive(
+		ctx,
+		edgeList,
+		remainingEdges,
+		0,
+		buckets,
+		usedNodes,
+		maxMatchingSize,
+	)
 
 	if success {
 		return result, nil
@@ -476,7 +498,8 @@ func (rf *RodeoFactory) solveRecursive(
 	for e := range remainingEdges {
 		options := 0
 		for i := range buckets {
-			if !usedNodes[i].contains(int(e.P1)) && !usedNodes[i].contains(int(e.P2)) && len(buckets[i]) < maxSize {
+			if !usedNodes[i].contains(int(e.P1)) && !usedNodes[i].contains(int(e.P2)) &&
+				len(buckets[i]) < maxSize {
 				options++
 			}
 		}
@@ -511,7 +534,15 @@ func (rf *RodeoFactory) solveRecursive(
 			nodesInBucket[p2] = struct{}{}
 
 			delete(remainingEdges, currentEdge)
-			sol, found := rf.solveRecursive(ctx, allEdges, remainingEdges, edgeIdx+1, buckets, usedNodes, maxSize)
+			sol, found := rf.solveRecursive(
+				ctx,
+				allEdges,
+				remainingEdges,
+				edgeIdx+1,
+				buckets,
+				usedNodes,
+				maxSize,
+			)
 			if found {
 				return sol, true
 			}
@@ -537,7 +568,7 @@ func copyMatchings(src matchings) matchings {
 
 func validateTournamentRounds(
 	rounds matchings,
-	teams []Team,
+	teams []*Team,
 	totalRounds int,
 	matchesPerTurn float64,
 	totalMatches int,
@@ -562,16 +593,23 @@ func validateTournamentRounds(
 		for edge := range round {
 			totalScheduledCount++
 			if _, exists := scheduledEdges[edge]; exists {
-				return fmt.Errorf("match scheduled twice: teams %v and %v were scheduled again in round %d",
-					teams[edge.P1], teams[edge.P2], i+1)
+				return fmt.Errorf(
+					"match scheduled twice: teams %v and %v were scheduled again in round %d",
+					teams[edge.P1],
+					teams[edge.P2],
+					i+1,
+				)
 			}
 			scheduledEdges[edge] = struct{}{}
 		}
 	}
 
 	if totalScheduledCount != totalMatches {
-		return fmt.Errorf("not every match was scheduled: total scheduled count %d does not match total matches %d",
-			totalScheduledCount, totalMatches)
+		return fmt.Errorf(
+			"not every match was scheduled: total scheduled count %d does not match total matches %d",
+			totalScheduledCount,
+			totalMatches,
+		)
 	}
 
 	scheduledNodes := make(map[Node]int)
@@ -581,11 +619,19 @@ func validateTournamentRounds(
 		for edge := range round {
 
 			if _, exists := scheduledInRound[edge.P1]; exists {
-				return fmt.Errorf("team %v scheduled more than once across all rounds (found twice in round %d)", teams[edge.P1], i+1)
+				return fmt.Errorf(
+					"team %v scheduled more than once across all rounds (found twice in round %d)",
+					teams[edge.P1],
+					i+1,
+				)
 			}
 
 			if _, exists := scheduledInRound[edge.P2]; exists {
-				return fmt.Errorf("team %v scheduled more than once across all rounds (found twice in round %d)", teams[edge.P2], i+1)
+				return fmt.Errorf(
+					"team %v scheduled more than once across all rounds (found twice in round %d)",
+					teams[edge.P2],
+					i+1,
+				)
 			}
 
 			scheduledInRound[edge.P1] = struct{}{}
@@ -598,7 +644,12 @@ func validateTournamentRounds(
 	for node, count := range scheduledNodes {
 
 		if count != matchesPerTeam {
-			return fmt.Errorf("team %v scheduled %d times, expected %d times", teams[node], count, matchesPerTeam)
+			return fmt.Errorf(
+				"team %v scheduled %d times, expected %d times",
+				teams[node],
+				count,
+				matchesPerTeam,
+			)
 		}
 	}
 

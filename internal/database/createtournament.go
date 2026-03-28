@@ -101,7 +101,7 @@ func CreateTournament(
 	ctx context.Context,
 	conn *pgxpool.Pool,
 	userId int64,
-	t *tournament.Tournament,
+	t tournament.Tournament,
 ) error {
 	log.Println("creating tournament...")
 	tx, err := conn.Begin(ctx)
@@ -115,26 +115,26 @@ func CreateTournament(
 		}
 	}()
 
-	tournamentType, err := tournament.TournamentTypeToString((*t).GetTournamentType())
+	tournamentType, err := tournament.TournamentTypeToString(t.GetTournamentType())
 	if err != nil {
 		return fmt.Errorf("error converting tournament type to string: %w", err)
 	}
 
-	tournamentId, err := queryCreateTournament(ctx, tx, userId, (*t).GetDateStart(), tournamentType)
+	tournamentId, err := queryCreateTournament(ctx, tx, userId, t.GetDateStart(), tournamentType)
 	if err != nil {
 		return err
 	}
 
-	teamIds := make(map[tournament.Team]int64)
-	for _, team := range (*t).GetTeams() {
-		teamId, err := queryInsertTeam(ctx, tx, team)
+	teamIds := make(map[*tournament.Team]int64)
+	for _, team := range t.GetTeams() {
+		teamId, err := queryInsertTeam(ctx, tx, *team)
 		if err != nil {
 			return err
 		}
 		teamIds[team] = teamId
 	}
 
-	rounds := (*t).GetRounds()
+	rounds := t.GetRounds()
 	for roundIndex, round := range rounds {
 		for _, match := range round.Matches {
 			team1Id := teamIds[match.TeamA]

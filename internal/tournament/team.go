@@ -59,8 +59,8 @@ func GenderCount(teams []Team, gender Gender) int {
 	return count
 }
 
-func GetTeamsByGender(teams []Team, gender Gender) []Team {
-	var filteredTeams []Team
+func GetTeamsByGender(teams []*Team, gender Gender) []*Team {
+	var filteredTeams []*Team
 	for _, t := range teams {
 		if t.TeamGender == gender {
 			filteredTeams = append(filteredTeams, t)
