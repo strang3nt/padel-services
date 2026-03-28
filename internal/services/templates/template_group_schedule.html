@@ -11,7 +11,6 @@
       font-family: 'Open Sans', sans-serif;
     }
 
-    /* 1. Flat corners and remove shadows */
     .card,
     .card-header {
       border-radius: 1px !important;
@@ -23,10 +22,8 @@
       text-align: center;
       position: relative;
       left: -60px;
-      /* Moves the text 20px to the left of the center */
     }
 
-    /* 2. Remove padding from Card and Grid containers */
     .card-content {
       padding: 0 !important;
     }
@@ -39,7 +36,6 @@
 
     .table td {
       padding: 2px 4px !important;
-      /* Minimal padding for legibility */
     }
 
     tr {
@@ -55,7 +51,6 @@
       border-bottom: none;
     }
 
-    /* 4. Slim down Headers */
     .card-header {
       min-height: unset !important;
     }
@@ -64,12 +59,10 @@
       --bulma-card-header-padding: 2px 4px !important;
     }
 
-    /* 5. Print & Layout Optimization */
     @media print {
       @page {
         size: landscape;
         margin: 5mm;
-        /* Minimum physical margin */
       }
 
       body {
@@ -91,7 +84,6 @@
 
     .rounds {
       zoom: 0.85;
-      /* Adjusted to fill the width of the page better */
     }
 
     .has-background-brand-red-light {

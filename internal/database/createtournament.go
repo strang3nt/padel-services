@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/strang3nt/padel-services/pkg/tournament"
+	"github.com/strang3nt/padel-services/internal/tournament"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -39,7 +39,13 @@ func queryInsertTeam(ctx context.Context, tx pgx.Tx, team1 tournament.Team) (int
 	return id, nil
 }
 
-func queryCreateMatch(ctx context.Context, tx pgx.Tx, round_number int, tournamentId, team1Id, team2Id int64, court_number int) error {
+func queryCreateMatch(
+	ctx context.Context,
+	tx pgx.Tx,
+	round_number int,
+	tournamentId, team1Id, team2Id int64,
+	court_number int,
+) error {
 
 	const sql = `
 		WITH
@@ -62,14 +68,21 @@ func queryCreateMatch(ctx context.Context, tx pgx.Tx, round_number int, tourname
 	`
 
 	var id int64
-	if err := tx.QueryRow(ctx, sql, team1Id, team2Id, court_number, tournamentId, round_number).Scan(&id); err != nil {
+	if err := tx.QueryRow(ctx, sql, team1Id, team2Id, court_number, tournamentId, round_number).
+		Scan(&id); err != nil {
 		return fmt.Errorf("error while creating match: %w", err)
 	}
 
 	return nil
 }
 
-func queryCreateTournament(ctx context.Context, tx pgx.Tx, userId int64, tournamentDate time.Time, tournamentType string) (int64, error) {
+func queryCreateTournament(
+	ctx context.Context,
+	tx pgx.Tx,
+	userId int64,
+	tournamentDate time.Time,
+	tournamentType string,
+) (int64, error) {
 
 	sql := `
     INSERT INTO tournament (tournament_date, tournament_type_id, user_id)
@@ -84,7 +97,12 @@ func queryCreateTournament(ctx context.Context, tx pgx.Tx, userId int64, tournam
 	return id, nil
 }
 
-func CreateTournament(ctx context.Context, conn *pgxpool.Pool, userId int64, t *tournament.Tournament) error {
+func CreateTournament(
+	ctx context.Context,
+	conn *pgxpool.Pool,
+	userId int64,
+	t *tournament.Tournament,
+) error {
 	log.Println("creating tournament...")
 	tx, err := conn.Begin(ctx)
 	if err != nil {
@@ -121,7 +139,15 @@ func CreateTournament(ctx context.Context, conn *pgxpool.Pool, userId int64, t *
 		for _, match := range round.Matches {
 			team1Id := teamIds[match.TeamA]
 			team2Id := teamIds[match.TeamB]
-			err := queryCreateMatch(ctx, tx, roundIndex, tournamentId, team1Id, team2Id, match.CourtId)
+			err := queryCreateMatch(
+				ctx,
+				tx,
+				roundIndex,
+				tournamentId,
+				team1Id,
+				team2Id,
+				match.CourtId,
+			)
 			if err != nil {
 				return err
 			}

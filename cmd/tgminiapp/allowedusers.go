@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/strang3nt/padel-services/pkg/database"
+	"github.com/strang3nt/padel-services/internal/database"
 )
 
 type userData struct {

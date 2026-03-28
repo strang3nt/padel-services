@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/strang3nt/padel-services/pkg/tournament"
+	"github.com/strang3nt/padel-services/internal/tournament"
 )
 
 type Match struct {
@@ -138,7 +138,9 @@ func (tt TournamentPdfGenerator) runTemplate(
 	return tempFile.Name(), nil
 }
 
-func (tt TournamentPdfGenerator) generatePDFWithHeadlessChrome(inputHTMLPath, outputPath string) error {
+func (tt TournamentPdfGenerator) generatePDFWithHeadlessChrome(
+	inputHTMLPath, outputPath string,
+) error {
 
 	absPath, _ := filepath.Abs(inputHTMLPath)
 	inputURL := "file://" + absPath
@@ -167,7 +169,10 @@ func (tt TournamentPdfGenerator) generatePDFWithHeadlessChrome(inputHTMLPath, ou
 	}
 
 	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
-		return fmt.Errorf("PDF output file was not created. Chrome executable error log: %s", stderr.String())
+		return fmt.Errorf(
+			"PDF output file was not created. Chrome executable error log: %s",
+			stderr.String(),
+		)
 	}
 
 	return nil

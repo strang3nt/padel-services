@@ -3,9 +3,6 @@ package tournament
 import "iter"
 
 type Graph struct {
-	// nodes is a map where the key is the node ID (Node)
-	// and the value is a map acting as a set of its neighbors (e.g., an adjacency list).
-	// The C++ `pair.second.empty()` suggests the value is a container of neighbors.
 	nodes map[Node]map[Node]bool
 }
 

@@ -11,10 +11,10 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/strang3nt/padel-services/pkg/services"
-	"github.com/strang3nt/padel-services/pkg/tournament"
+	"github.com/strang3nt/padel-services/internal/services"
+	"github.com/strang3nt/padel-services/internal/tournament"
 
-	"github.com/strang3nt/padel-services/pkg/database"
+	"github.com/strang3nt/padel-services/internal/database"
 
 	"fmt"
 	"net/http"
@@ -146,7 +146,13 @@ func main() {
 				return
 			}
 
-			tournament := services.CreateTournament(tournamentType, dateStart, teams, int(totalRounds), int(availableCourts))
+			tournament := services.CreateTournament(
+				tournamentType,
+				dateStart,
+				teams,
+				int(totalRounds),
+				int(availableCourts),
+			)
 
 			if tournament != nil {
 				err = database.CreateTournament(ctx, conn, int64(userId), &tournament)
@@ -237,7 +243,13 @@ func main() {
 			index, _ := publicFiles.Open("index.html")
 			stat, _ := index.Stat()
 			content, _ := io.ReadAll(index)
-			http.ServeContent(c.Writer, c.Request, "index.html", stat.ModTime(), bytes.NewReader(content))
+			http.ServeContent(
+				c.Writer,
+				c.Request,
+				"index.html",
+				stat.ModTime(),
+				bytes.NewReader(content),
+			)
 		})
 	}
 

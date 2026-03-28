@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/strang3nt/padel-services/pkg/tournament"
+	"github.com/strang3nt/padel-services/internal/tournament"
 )
 
 func CreateTournament(
@@ -23,7 +23,12 @@ func CreateTournament(
 			AvailableCourts: availableCourts,
 		}
 
-		rodeoInstance, err := rodeo_factory.GetFirstValidTournament(10*time.Second, runtime.NumCPU(), teams, dateStart)
+		rodeoInstance, err := rodeo_factory.GetFirstValidTournament(
+			10*time.Second,
+			runtime.NumCPU(),
+			teams,
+			dateStart,
+		)
 		if err != nil {
 			log.Printf("error while creating tournament: %v", err)
 			return nil

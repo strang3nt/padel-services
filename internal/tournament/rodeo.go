@@ -57,7 +57,7 @@ func (rodeo *Rodeo) SerializeToCSV() string {
 
 	for _, t := range turns {
 
-		sb.WriteString(fmt.Sprintf("Round %d,", i))
+		fmt.Fprintf(&sb, "zound %d,", i)
 		match := 1
 
 		for _, m := range t.Matches {
@@ -65,9 +65,9 @@ func (rodeo *Rodeo) SerializeToCSV() string {
 			team1 := m.TeamA
 			team2 := m.TeamB
 
-			sb.WriteString(fmt.Sprintf("Match %d,", match))
-			sb.WriteString(fmt.Sprintf("%s - %s,", team1.Person_1.Id, team1.Person_2.Id))
-			sb.WriteString(fmt.Sprintf("%s - %s,", team2.Person_1.Id, team2.Person_2.Id))
+			fmt.Fprintf(&sb, "Match %d,", match)
+			fmt.Fprintf(&sb, "%s - %s,", team1.Person_1.Id, team1.Person_2.Id)
+			fmt.Fprintf(&sb, "%s - %s,", team2.Person_1.Id, team2.Person_2.Id)
 
 			match += 1
 		}

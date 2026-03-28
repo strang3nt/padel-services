@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/strang3nt/padel-services/pkg/tournament"
+	"github.com/strang3nt/padel-services/internal/tournament"
 
 	"github.com/jackc/pgx/v5"
 
@@ -101,7 +101,10 @@ func GetTournamentsByDate(
 			return tournaments, fmt.Errorf("collectRows error: %v", err)
 		}
 
-		tournaments = append(tournaments, buildTournamentData(id.TournamentType, tournamentDate, matches, teams))
+		tournaments = append(
+			tournaments,
+			buildTournamentData(id.TournamentType, tournamentDate, matches, teams),
+		)
 
 	}
 
@@ -148,7 +151,14 @@ func buildTournamentData(
 		person1 := tournament.Person{Id: t.Person1}
 		person2 := tournament.Person{Id: t.Person2}
 
-		teamsResult = append(teamsResult, tournament.Team{Person_1: person1, Person_2: person2, TeamGender: tournament.GenderFromString(t.Gender)})
+		teamsResult = append(
+			teamsResult,
+			tournament.Team{
+				Person_1:   person1,
+				Person_2:   person2,
+				TeamGender: tournament.GenderFromString(t.Gender),
+			},
+		)
 
 		teamsMap[t.TeamId] = &teamsResult[len(teamsResult)-1]
 
