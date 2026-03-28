@@ -78,7 +78,7 @@ func (rf *RodeoFactory) MakeTournament(
 
 	var rounds matchings
 	var err error
-	rounds = rf.makeMatchingsHeuristic(*graph.GetCopy(), matchesPerTurn, roundsNumber)
+	rounds = rf.makeMatchingsHeuristic(graph.GetCopy(), matchesPerTurn, roundsNumber)
 
 	noRoundsAreEmpty := true
 	for _, round := range rounds {
@@ -220,22 +220,6 @@ func getMatchesPerTeam(teamsNumber int, totalRounds int, availableCourts int) (i
 	}
 
 	return 0, 0.0, 0
-}
-
-type Node int
-type edge struct {
-	P1 Node
-	P2 Node
-}
-
-type matching map[edge]struct{}
-type matchings []matching
-
-type nodeSet map[int]struct{}
-
-func (ns nodeSet) contains(node int) bool {
-	_, ok := ns[node]
-	return ok
 }
 
 func (rf *RodeoFactory) makeMatchingsHeuristic(

@@ -6,7 +6,22 @@ type Graph struct {
 	nodes map[Node]map[Node]bool
 }
 
-func (g *Graph) Empty() bool {
+type Node int
+type edge struct {
+	P1 Node
+	P2 Node
+}
+
+type matching map[edge]struct{}
+type matchings []matching
+
+type nodeSet map[int]struct{}
+
+func (ns nodeSet) contains(node int) bool {
+	_, ok := ns[node]
+	return ok
+}
+func (g Graph) Empty() bool {
 
 	for _, neighbors := range g.nodes {
 		if len(neighbors) > 0 {
@@ -33,8 +48,8 @@ func (g *Graph) RemoveEdge(e edge) bool {
 	return res
 }
 
-func (g *Graph) GetCopy() *Graph {
-	newGraph := &Graph{
+func (g Graph) GetCopy() Graph {
+	newGraph := Graph{
 		nodes: make(map[Node]map[Node]bool),
 	}
 
@@ -65,7 +80,7 @@ func (g *Graph) GetNeighbors(n Node) []Node {
 	return neighborsList
 }
 
-func (g *Graph) GetAdjacentEdges(n Node) []edge {
+func (g Graph) GetAdjacentEdges(n Node) []edge {
 	var edges []edge
 	if neighbors, exists := g.nodes[n]; exists {
 		for neighbor := range neighbors {
@@ -75,7 +90,7 @@ func (g *Graph) GetAdjacentEdges(n Node) []edge {
 	return edges
 }
 
-func (g *Graph) Size() int {
+func (g Graph) Size() int {
 	count := 0
 	for _, neighbors := range g.nodes {
 		count += len(neighbors)
@@ -83,7 +98,7 @@ func (g *Graph) Size() int {
 	return count / 2
 }
 
-func (g *Graph) GetEdgesIterator() iter.Seq[edge] {
+func (g Graph) GetEdgesIterator() iter.Seq[edge] {
 
 	return func(yield func(edge) bool) {
 		seen := make(map[edge]bool)
