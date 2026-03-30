@@ -34,7 +34,7 @@ type Match struct {
 type Tournament interface {
 	GetName() string
 	GetDateStart() time.Time
-	GetTeams() []*Team
+	GetTeams() []Team
 	GetRounds() []Round
 	GetTournamentType() TournamentType
 }
@@ -59,8 +59,4 @@ func TournamentTypeToString(t TournamentType) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid tournament type: %d", t)
 	}
-}
-
-type TournamentFactory interface {
-	MakeTournament(teams []Team, dateStart time.Time) (*Tournament, error)
 }

@@ -69,8 +69,8 @@ func TestMakeMatchesWithGendersSplit(t *testing.T) {
 		TeamGender: Female,
 	}
 
-	teams := []*Team{
-		&team1, &team2, &team3, &team4, &team5, &team6, &team7, &team8, &team9, &team10,
+	teams := []Team{
+		team1, team2, team3, team4, team5, team6, team7, team8, team9, team10,
 	}
 
 	// this configuration should create 5 matches per round, 4 matches per team
@@ -122,12 +122,12 @@ func TestMakeMatchingsBruteForceGraph_N6K3(t *testing.T) {
 
 	allMatches := rf.makeEdgesN6K3()
 
-	graph := NewGraph()
+	graph := MakeGraph()
 	for edge := range allMatches {
 		graph.AddEdge(edge)
 	}
 	ctx := context.Background()
-	rounds, err := rf.makeMatchingsBacktracking(ctx, *graph, matchesPerTurn, totalRounds)
+	rounds, err := rf.makeMatchingsBacktracking(ctx, graph, matchesPerTurn, totalRounds)
 	if err != nil {
 		t.Fatalf("makeMatchingsBruteForceGraph returned an error: %v", err)
 	}
@@ -233,8 +233,8 @@ func TestMakeTournamentN8K8(t *testing.T) {
 		TeamGender: Female,
 	}
 
-	teams := []*Team{
-		&team1, &team2, &team3, &team4, &team5, &team6, &team7, &team8,
+	teams := []Team{
+		team1, team2, team3, team4, team5, team6, team7, team8,
 	}
 
 	dateStart := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -325,17 +325,17 @@ func TestMakeTournamentN10K8(t *testing.T) {
 		TeamGender: Female,
 	}
 
-	teams := []*Team{
-		&team1,
-		&team2,
-		&team3,
-		&team4,
-		&team5,
-		&team6,
-		&team7,
-		&team8,
-		&team9,
-		&team10,
+	teams := []Team{
+		team1,
+		team2,
+		team3,
+		team4,
+		team5,
+		team6,
+		team7,
+		team8,
+		team9,
+		team10,
 	}
 
 	dateStart := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -435,19 +435,19 @@ func TestMakeTournamentMaximiseMaleMatches(t *testing.T) {
 		TeamGender: Male,
 	}
 
-	teams := []*Team{
-		&team1,
-		&team2,
-		&team3,
-		&team4,
-		&team5,
-		&team6,
-		&team7,
-		&team8,
-		&team9,
-		&team10,
-		&team11,
-		&team12,
+	teams := []Team{
+		team1,
+		team2,
+		team3,
+		team4,
+		team5,
+		team6,
+		team7,
+		team8,
+		team9,
+		team10,
+		team11,
+		team12,
 	}
 
 	dateStart := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)

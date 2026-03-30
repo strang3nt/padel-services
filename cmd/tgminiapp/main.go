@@ -146,15 +146,10 @@ func main() {
 				return
 			}
 
-			teamsPtr := make([]*tournament.Team, 0, len(teams))
-			for _, team := range teams {
-				teamsPtr = append(teamsPtr, &team)
-			}
-
 			tournament := services.CreateTournament(
 				tournamentType,
 				dateStart,
-				teamsPtr,
+				teams,
 				int(totalRounds),
 				int(availableCourts),
 			)

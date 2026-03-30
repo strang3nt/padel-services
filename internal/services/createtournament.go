@@ -13,7 +13,7 @@ import (
 func CreateTournament(
 	tournamentType string,
 	dateStart time.Time,
-	teams []*tournament.Team,
+	teams []tournament.Team,
 	totalRounds, availableCourts int) tournament.Tournament {
 
 	switch tournamentType {
@@ -35,13 +35,38 @@ func CreateTournament(
 		}
 
 		return rodeoInstance
+	case "SinglePlayerRodeo":
+
+		peopleMap := make(map[tournament.Person]any)
+
+		for _, p := range tournament.GetPeople(teams) {
+			peopleMap[p] = struct{}{}
+		}
+
+		rodeo_factory := tournament.SinglePlayerRodeoFactory{
+			MaxRounds:       totalRounds,
+			AvailableCourts: availableCourts,
+			People:          peopleMap,
+		}
+
+		rodeoInstance, err := rodeo_factory.GetFirstValidTournament(
+			10*time.Second,
+			runtime.NumCPU(),
+			dateStart,
+		)
+		if err != nil {
+			log.Printf("error while creating tournament: %v", err)
+			return nil
+		}
+
+		return rodeoInstance
 	default:
 		return nil
 	}
 }
 
-func MakeTeamsFromMessage(stringteams *bufio.Scanner) ([]*tournament.Team, error) {
-	var teams []*tournament.Team
+func MakeTeamsFromMessage(stringteams *bufio.Scanner) ([]tournament.Team, error) {
+	var teams []tournament.Team
 
 	for stringteams.Scan() {
 		line := stringteams.Text()
@@ -61,7 +86,7 @@ func MakeTeamsFromMessage(stringteams *bufio.Scanner) ([]*tournament.Team, error
 			g = tournament.GenderFromString(strings.TrimSpace(row[2]))
 		}
 		team := tournament.MakeTeam(person1, person2, g)
-		teams = append(teams, &team)
+		teams = append(teams, team)
 	}
 
 	return teams, nil

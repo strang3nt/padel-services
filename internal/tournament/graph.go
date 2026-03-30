@@ -1,6 +1,9 @@
 package tournament
 
-import "iter"
+import (
+	"iter"
+	"maps"
+)
 
 type Graph struct {
 	nodes map[Node]map[Node]bool
@@ -15,7 +18,89 @@ type edge struct {
 type matching map[edge]struct{}
 type matchings []matching
 
-type nodeSet map[int]struct{}
+func (m *matching) addCanonicalEdge(nodeA int, nodeB int) {
+	if *m == nil {
+		*m = make(matching)
+	}
+
+	var e edge
+	if nodeA < nodeB {
+		e = edge{P1: Node(nodeA), P2: Node(nodeB)}
+	} else {
+		e = edge{P1: Node(nodeB), P2: Node(nodeA)}
+	}
+
+	(*m)[e] = struct{}{}
+}
+
+func copyMatchings(src matchings) matchings {
+	dst := make(matchings, len(src))
+	for i, m := range src {
+		dst[i] = make(matching)
+		maps.Copy(dst[i], m)
+	}
+	return dst
+}
+
+func kRegularEven(nodes []int, k int) matching {
+	n := len(nodes)
+	res := make(matching)
+
+	for i := range n {
+
+		for count := 1; count <= k/2; count++ {
+			jIndex := i - count
+
+			jModN := (jIndex%n + n) % n
+
+			res.addCanonicalEdge(nodes[jModN], nodes[i])
+		}
+
+		for count := 1; count <= k/2; count++ {
+			jIndex := i + count
+			jModN := jIndex % n
+
+			res.addCanonicalEdge(nodes[jModN], nodes[i])
+		}
+	}
+
+	return res
+}
+
+func kRegularOdd(nodes []int, k int) matching {
+	n := len(nodes)
+
+	res := kRegularEven(nodes, k-1)
+
+	for i := range n {
+
+		partnerIndex := (i + n/2) % n
+		res.addCanonicalEdge(nodes[i], nodes[partnerIndex])
+	}
+
+	return res
+}
+
+func makeMatching(nodes []int, k int) matching {
+	n := len(nodes)
+
+	isEvenNK := (n*k)%2 == 0
+
+	isNGreaterThanK := n > k
+
+	if !isEvenNK || !isNGreaterThanK {
+		return make(matching)
+	}
+
+	if k%2 == 0 {
+
+		return kRegularEven(nodes, k)
+	}
+
+	return kRegularOdd(nodes, k)
+}
+
+type nodeSet map[int]any
 
 func (ns nodeSet) contains(node int) bool {
 	_, ok := ns[node]
@@ -64,8 +149,8 @@ func (g Graph) GetCopy() Graph {
 	return newGraph
 }
 
-func NewGraph() *Graph {
-	return &Graph{
+func MakeGraph() Graph {
+	return Graph{
 		nodes: make(map[Node]map[Node]bool),
 	}
 }

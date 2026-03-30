@@ -15,7 +15,7 @@ import (
 func queryInsertTeam(ctx context.Context, tx pgx.Tx, team1 tournament.Team) (int64, error) {
 
 	const sql = `
-    WITH upserted_people AS (
+	WITH upserted_people AS (
 				INSERT INTO person (name)
     		SELECT DISTINCT name 
 				FROM (VALUES ($1::TEXT), ($2::TEXT)) AS input(name)
@@ -125,9 +125,9 @@ func CreateTournament(
 		return err
 	}
 
-	teamIds := make(map[*tournament.Team]int64)
+	teamIds := make(map[tournament.Team]int64)
 	for _, team := range t.GetTeams() {
-		teamId, err := queryInsertTeam(ctx, tx, *team)
+		teamId, err := queryInsertTeam(ctx, tx, team)
 		if err != nil {
 			return err
 		}
@@ -137,8 +137,8 @@ func CreateTournament(
 	rounds := t.GetRounds()
 	for roundIndex, round := range rounds {
 		for _, match := range round.Matches {
-			team1Id := teamIds[match.TeamA]
-			team2Id := teamIds[match.TeamB]
+			team1Id := teamIds[*match.TeamA]
+			team2Id := teamIds[*match.TeamB]
 			err := queryCreateMatch(
 				ctx,
 				tx,

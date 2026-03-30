@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"maps"
 	"math"
 	"time"
 )
@@ -18,7 +17,7 @@ type RodeoFactory struct {
 func (rf *RodeoFactory) GetFirstValidTournament(
 	timeout time.Duration,
 	count int,
-	teams []*Team,
+	teams []Team,
 	start time.Time,
 ) (*Rodeo, error) {
 
@@ -51,7 +50,7 @@ func (rf *RodeoFactory) GetFirstValidTournament(
 
 func (rf *RodeoFactory) MakeTournament(
 	ctx context.Context,
-	teams []*Team,
+	teams []Team,
 	dateStart time.Time) (*Rodeo, error) {
 	n := len(teams)
 	nodes := make([]int, n)
@@ -89,7 +88,7 @@ func (rf *RodeoFactory) MakeTournament(
 	}
 
 	if !noRoundsAreEmpty || len(rounds) != roundsNumber {
-		rounds, err = rf.makeMatchingsBacktracking(ctx, *graph, matchesPerTurn, roundsNumber)
+		rounds, err = rf.makeMatchingsBacktracking(ctx, graph, matchesPerTurn, roundsNumber)
 		if err != nil {
 			return nil, err
 		}
@@ -117,12 +116,9 @@ func (rf *RodeoFactory) MakeTournament(
 			e1 := edge.P1
 			e2 := edge.P2
 
-			teamA := teams[e1]
-			teamB := teams[e2]
-
 			m := Match{
-				TeamA:   teamA,
-				TeamB:   teamB,
+				TeamA:   &teams[e1],
+				TeamB:   &teams[e2],
 				CourtId: currCourt,
 			}
 			currCourt += 1
@@ -135,14 +131,14 @@ func (rf *RodeoFactory) MakeTournament(
 	return NewRodeo("Rodeo", dateStart, teams, turns), nil
 }
 
-func (rf *RodeoFactory) getGraph(teams []*Team, matchesPerTeam int) (*Graph, []*Team) {
+func (rf *RodeoFactory) getGraph(teams []Team, matchesPerTeam int) (Graph, []Team) {
 
-	graph := NewGraph()
+	graph := MakeGraph()
 	allMatches := make(matching)
-	var teamsOrdered []*Team
+	var teamsOrdered []Team
 
 	if canAllGendersPlayOnlyAgainstEachOther(teams, matchesPerTeam) {
-		teamsSeparatedByGender := make([]*Team, 0, len(teams))
+		teamsSeparatedByGender := make([]Team, 0, len(teams))
 		nodesByGender := make(map[Gender][]int)
 		currNode := 0
 		for _, g := range GetAllGenders() {
@@ -156,7 +152,7 @@ func (rf *RodeoFactory) getGraph(teams []*Team, matchesPerTeam int) (*Graph, []*
 		}
 
 		for _, v := range nodesByGender {
-			for edge := range rf.makeEdges(v, matchesPerTeam) {
+			for edge := range makeMatching(v, matchesPerTeam) {
 				allMatches[edge] = struct{}{}
 			}
 		}
@@ -167,7 +163,7 @@ func (rf *RodeoFactory) getGraph(teams []*Team, matchesPerTeam int) (*Graph, []*
 		for i := range len(teams) {
 			nodes[i] = i
 		}
-		allMatches = rf.makeEdges(nodes, matchesPerTeam)
+		allMatches = makeMatching(nodes, matchesPerTeam)
 		teamsOrdered = orderTeamsByGender(teams)
 	}
 
@@ -177,7 +173,7 @@ func (rf *RodeoFactory) getGraph(teams []*Team, matchesPerTeam int) (*Graph, []*
 	return graph, teamsOrdered
 }
 
-func canAllGendersPlayOnlyAgainstEachOther(teams []*Team, matchesPerTeam int) bool {
+func canAllGendersPlayOnlyAgainstEachOther(teams []Team, matchesPerTeam int) bool {
 	genderCounts := make(map[Gender]int)
 
 	for _, g := range GetAllGenders() {
@@ -283,74 +279,6 @@ func (rf *RodeoFactory) makeMatchingsHeuristic(
 	return res
 }
 
-func (rf *RodeoFactory) addCanonicalEdge(res matching, nodeA int, nodeB int) {
-	var e edge
-	if nodeA < nodeB {
-		e = edge{P1: Node(nodeA), P2: Node(nodeB)}
-	} else {
-		e = edge{P1: Node(nodeB), P2: Node(nodeA)}
-	}
-	res[e] = struct{}{}
-}
-
-func (rf *RodeoFactory) kRegularEven(nodes []int, k int) matching {
-	n := len(nodes)
-	res := make(matching)
-
-	for i := range n {
-
-		for count := 1; count <= k/2; count++ {
-			jIndex := i - count
-
-			jModN := (jIndex%n + n) % n
-
-			rf.addCanonicalEdge(res, nodes[jModN], nodes[i])
-		}
-
-		for count := 1; count <= k/2; count++ {
-			jIndex := i + count
-			jModN := jIndex % n
-
-			rf.addCanonicalEdge(res, nodes[jModN], nodes[i])
-		}
-	}
-
-	return res
-}
-
-func (rf *RodeoFactory) kRegularOdd(nodes []int, k int) matching {
-	n := len(nodes)
-
-	res := rf.kRegularEven(nodes, k-1)
-
-	for i := range n {
-
-		partnerIndex := (i + n/2) % n
-		rf.addCanonicalEdge(res, nodes[i], nodes[partnerIndex])
-	}
-
-	return res
-}
-
-func (rf *RodeoFactory) makeEdges(nodes []int, k int) matching {
-	n := len(nodes)
-
-	isEvenNK := (n*k)%2 == 0
-
-	isNGreaterThanK := n > k
-
-	if !isEvenNK || !isNGreaterThanK {
-		return make(matching)
-	}
-
-	if k%2 == 0 {
-
-		return rf.kRegularEven(nodes, k)
-	}
-
-	return rf.kRegularOdd(nodes, k)
-}
-
 func NewRodeoFactory(turns, availableCourts int) *RodeoFactory {
 	return &RodeoFactory{
 		MaxRounds:       turns,
@@ -358,9 +286,9 @@ func NewRodeoFactory(turns, availableCourts int) *RodeoFactory {
 	}
 }
 
-func prepend(tms []*Team, t *Team) []*Team {
+func prepend(tms []Team, t Team) []Team {
 	empty_team := Team{}
-	tms = append(tms, &empty_team)
+	tms = append(tms, empty_team)
 	copy(tms[1:], tms)
 	tms[0] = t
 	return tms
@@ -372,15 +300,15 @@ func prepend(tms []*Team, t *Team) []*Team {
 // the ordering is built like this because it leverages some aspects of the
 // the match-making algorithm: teams will be paired against the nearest neighbors
 // to their left and right.
-func orderTeamsByGender(teams []*Team) []*Team {
+func orderTeamsByGender(teams []Team) []Team {
 
-	genderBuckets := make(map[Gender][]*Team)
+	genderBuckets := make(map[Gender][]Team)
 
 	for _, team := range teams {
 		genderBuckets[team.TeamGender] = append(genderBuckets[team.TeamGender], team)
 	}
 
-	var orderedTeams []*Team
+	var orderedTeams []Team
 	orderedTeams = append(orderedTeams, genderBuckets[Female]...)
 
 	top := true
@@ -541,18 +469,9 @@ func (rf *RodeoFactory) solveRecursive(
 	return nil, false
 }
 
-func copyMatchings(src matchings) matchings {
-	dst := make(matchings, len(src))
-	for i, m := range src {
-		dst[i] = make(matching)
-		maps.Copy(dst[i], m)
-	}
-	return dst
-}
-
 func validateTournamentRounds(
 	rounds matchings,
-	teams []*Team,
+	teams []Team,
 	totalRounds int,
 	matchesPerTurn float64,
 	totalMatches int,
