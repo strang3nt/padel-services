@@ -14,6 +14,11 @@ import { MenuPage } from "@/pages/IndexPage/MenuPage";
 import { RouteObject, useRouteError } from "react-router-dom";
 import { ProtectedRoute } from "@/pages/ProtectedRoute";
 import GenericErrorPage from "@/pages/GenericErrorPage";
+import {
+  AddPeoplePage,
+  AddPersonPage,
+  peopleLoader,
+} from "@/pages/CreateTournamentPage/AddPeoplePage";
 
 const RouteError = () => {
   const error = useRouteError();
@@ -33,6 +38,15 @@ export const routes: RouteObject[] = [
         children: [
           {
             path: "/create-tournament/add-players",
+            element: <AddPeoplePage />,
+            loader: peopleLoader,
+          },
+          {
+            path: "/create-tournament/add-person",
+            element: <AddPersonPage />,
+          },
+          {
+            path: "/create-tournament/add-teams",
             element: <AddPlayersPage />,
             loader: teamsLoader,
           },

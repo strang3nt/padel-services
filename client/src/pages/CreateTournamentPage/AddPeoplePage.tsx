@@ -1,22 +1,17 @@
 import { useState, type FC } from "react";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
-import { genderToString } from "./utils";
-import { Team } from "@/pages/RetrieveTournamentPage";
+import { Person, Team } from "./tournament";
 import { useAuth } from "@/components/AuthProvider";
 import { TournamentSetupData } from "./CreateTournamentPage";
 
 import Divider from "@mui/material/Divider";
 import Box from "@mui/material/Box";
-import InputLabel from "@mui/material/InputLabel";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import List from "@mui/material/List";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
 import ListItemText from "@mui/material/ListItemText";
 import ListItem from "@mui/material/ListItem";
 import CloseIcon from "@mui/icons-material/Close";
-import FormControl from "@mui/material/FormControl";
 import IconButton from "@mui/material/IconButton";
 import Snackbar from "@mui/material/Snackbar";
 import { Link } from "@/components/Link/Link.tsx";
@@ -27,25 +22,47 @@ interface NotificationContent {
   onClose?: () => void;
 }
 
-export const tournamentStore = {
-  teams: [] as Team[],
-  addTeam: (team: Team) => {
-    tournamentStore.teams.push(team);
+export const peopleStore = {
+  people: [] as Person[],
+  addPerson: (person: Person) => {
+    peopleStore.people.push(person);
   },
-  removeTeam: (index: number) => {
-    tournamentStore.teams.splice(index, 1);
+  removePerson: (index: number) => {
+    peopleStore.people.splice(index, 1);
   },
-  getTeams: () => tournamentStore.teams,
+  getPeople: () => peopleStore.people,
 };
 
-export function teamsLoader() {
-  const teams = tournamentStore.getTeams();
-  return { teams };
+export function peopleLoader() {
+  const people = peopleStore.getPeople();
+  return { people };
 }
 
-export const AddPlayersPage: FC = () => {
-  const loaderData = useLoaderData() as { teams: Team[] } | null;
-  const teams = loaderData?.teams || [];
+function peopleToTeams(people: Person[]): Team[] {
+  const emptyPerson: Person = { id: "" };
+  const teams = [] as Team[];
+
+  for (let i = 0; i < people.length; i += 2) {
+    teams.push({
+      person1: people[i],
+      person2: people[i + 1],
+      gender: 1,
+    });
+  }
+
+  if (people.length % 2 == 1) {
+    teams.push({
+      person1: people[people.length - 1],
+      person2: emptyPerson,
+      gender: 1,
+    });
+  }
+  return teams;
+}
+
+export const AddPeoplePage: FC = () => {
+  const loaderData = useLoaderData() as { people: Person[] } | null;
+  const people = loaderData?.people || [];
   const [_, setRefresh] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -55,7 +72,7 @@ export const AddPlayersPage: FC = () => {
   const config = location.state as TournamentSetupData | null;
 
   const handleDeleteTeam = (index: number) => {
-    tournamentStore.removeTeam(index);
+    peopleStore.removePerson(index);
     setRefresh((prev) => !prev);
   };
 
@@ -76,20 +93,20 @@ export const AddPlayersPage: FC = () => {
     );
   }
 
-  const isRosterFull = teams.length >= config.numberOfTeams;
+  const isRosterFull = people.length >= config.numberOfTeams;
 
   const handleSendTournament = () => {
     const dateStart = new Date(config.tournamentDate);
 
     fetch(
-      `/api/create-tournament?tournamentType=${config.selectedTournament}&dateStart=${dateStart.toISOString()}&totalRounds=${config.roundsNumber}&availableCourts=${config.availableCourts}`,
+      `/api/create-tournament?tournamentType=SinglePlayerRodeo&dateStart=${dateStart.toISOString()}&totalRounds=${config.roundsNumber}&availableCourts=${config.availableCourts}`,
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${bearerToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(teams),
+        body: JSON.stringify(peopleToTeams(people)),
       },
     )
       .then((response) => {
@@ -122,9 +139,9 @@ export const AddPlayersPage: FC = () => {
       />
 
       {!isRosterFull ? (
-        <Link to="/create-tournament/add-team" state={config}>
+        <Link to="/create-tournament/add-person" state={config}>
           <Button type="submit" size="large" fullWidth variant="outlined">
-            Add Team
+            Add Person
           </Button>
         </Link>
       ) : (
@@ -142,42 +159,30 @@ export const AddPlayersPage: FC = () => {
         </Box>
       )}
       <Divider textAlign="center">
-        Teams Added ({teams.length} / {config.numberOfTeams})
+        People Added ({people.length} / {config.numberOfTeams})
       </Divider>
 
       <List>
-        {teams.length === 0 ? (
+        {people.length === 0 ? (
           <ListItem>
-            <ListItemText primary="No teams added yet" />
+            <ListItemText primary="No person added yet" />
           </ListItem>
         ) : (
-          teams.map(
-            (
-              {
-                person1: { id: teammate1 },
-                person2: { id: teammate2 },
-                gender,
-              },
-              i,
-            ) => (
-              <ListItem key={i}>
-                <ListItemText
-                  primary={`${teammate1}, ${teammate2}`}
-                  secondary={`${genderToString(gender)} team`}
-                />
-                <IconButton onClick={() => handleDeleteTeam(i)}>
-                  <CloseIcon />
-                </IconButton>
-              </ListItem>
-            ),
-          )
+          people.map(({ id: person }, i) => (
+            <ListItem key={i}>
+              <ListItemText primary={person} />
+              <IconButton onClick={() => handleDeleteTeam(i)}>
+                <CloseIcon />
+              </IconButton>
+            </ListItem>
+          ))
         )}
       </List>
 
       <Button
         variant="contained"
         fullWidth
-        disabled={teams.length < config.numberOfTeams}
+        disabled={people.length < config.numberOfTeams}
         onClick={handleSendTournament}
       >
         Save Tournament
@@ -186,7 +191,7 @@ export const AddPlayersPage: FC = () => {
   );
 };
 
-export const AddTeamPage: FC = () => {
+export const AddPersonPage: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const data = location.state as TournamentSetupData | null;
@@ -196,19 +201,12 @@ export const AddTeamPage: FC = () => {
 
     const formData = new FormData(event.currentTarget);
 
-    const teammate1 = formData.get("teammate1") as string;
-    const teammate2 = formData.get("teammate2") as string;
-    const gender = formData.get("gender") as string;
+    const person = formData.get("person") as string;
 
-    if (!teammate1 || !teammate2 || gender === "") return;
+    if (!person) return;
 
-    const newTeam: Team = {
-      person1: { id: teammate1 },
-      person2: { id: teammate2 },
-      gender: parseInt(gender, 10),
-    };
-
-    tournamentStore.addTeam(newTeam);
+    const newPerson: Person = { id: person };
+    peopleStore.addPerson(newPerson);
 
     navigate("/create-tournament/add-players", {
       state: data,
@@ -222,34 +220,9 @@ export const AddTeamPage: FC = () => {
       onSubmit={handleSubmit}
       sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 2 }}
     >
-      <TextField
-        label="First teammate"
-        name="teammate1"
-        variant="outlined"
-        required
-      />
-      <TextField
-        label="Second teammate"
-        name="teammate2"
-        variant="outlined"
-        required
-      />
-      <FormControl required>
-        <InputLabel id="gender-label">Gender</InputLabel>
-        <Select
-          labelId="gender-label"
-          label="Gender"
-          name="gender"
-          defaultValue=""
-        >
-          <MenuItem value={0}>Male</MenuItem>
-          <MenuItem value={1}>Female</MenuItem>
-          <MenuItem value={2}>Mixed</MenuItem>
-        </Select>
-      </FormControl>
-
+      <TextField label="Player" name="person" variant="outlined" required />
       <Button type="submit" size="large" fullWidth variant="outlined">
-        Add Team
+        Add Player
       </Button>
     </Box>
   );

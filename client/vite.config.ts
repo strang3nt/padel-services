@@ -1,14 +1,14 @@
-import react from '@vitejs/plugin-react-swc';
-import { defineConfig } from 'vite';
-import mkcert from 'vite-plugin-mkcert';
-import tsconfigPaths from 'vite-tsconfig-paths';
+import react from "@vitejs/plugin-react-swc";
+import { defineConfig } from "vite";
+import mkcert from "vite-plugin-mkcert";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        api: 'modern',
+        api: "modern",
       },
     },
   },
@@ -25,19 +25,19 @@ export default defineConfig({
     process.env.HTTPS && mkcert(),
   ],
   build: {
-    target: 'esnext',
-    minify: 'terser'
+    target: "esnext",
+    minify: "terser",
   },
-  publicDir: './public',
+  publicDir: "./public",
   server: {
     host: true,
     proxy: {
-      '/api': {
-        target: 'http://backend:8080',
+      "/api": {
+        target: "http://backend:8080",
         changeOrigin: true,
       },
-      '/auth': {
-        target: 'http://backend:8080',
+      "/auth": {
+        target: "http://backend:8080",
         changeOrigin: true,
       },
     },

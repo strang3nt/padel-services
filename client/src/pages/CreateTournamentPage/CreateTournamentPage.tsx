@@ -10,6 +10,7 @@ import Section from "@/components/Section";
 import FormControl from "@mui/material/FormControl";
 import { Page } from "@/components/Page";
 import { getMatchesPerTeam } from "./rodeoTournament";
+import { getMatchesPerPerson } from "./singlePlayerRodeoTournament";
 
 export const CreateTournamentPage: FC = () => {
   return (
@@ -33,12 +34,14 @@ interface TournamentParamsProps {
   formData: TournamentSetupData;
   setFormData: React.Dispatch<React.SetStateAction<TournamentSetupData>>;
   helperText: () => string;
+  quantityDescription: string;
 }
 
 const TournamentParams: React.FC<TournamentParamsProps> = ({
   formData,
   setFormData,
   helperText,
+  quantityDescription,
 }) => {
   return (
     <>
@@ -58,7 +61,6 @@ const TournamentParams: React.FC<TournamentParamsProps> = ({
         label="Number of rounds"
         name="roundsNumber"
         type="number"
-        helperText={helperText()}
         onChange={(e) =>
           setFormData({
             ...formData,
@@ -67,20 +69,19 @@ const TournamentParams: React.FC<TournamentParamsProps> = ({
         }
         required
       />
-      {formData.selectedTournament === "Rodeo" && (
-        <TextField
-          label="Number of teams"
-          name="numberOfTeams"
-          type="number"
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              numberOfTeams: parseInt(e.target.value, 10),
-            })
-          }
-          required
-        />
-      )}
+      <TextField
+        label={quantityDescription}
+        name="numberOfTeams"
+        type="number"
+        helperText={helperText()}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            numberOfTeams: parseInt(e.target.value, 10),
+          })
+        }
+        required
+      />
     </>
   );
 };
@@ -95,8 +96,8 @@ export const ChooseTournamentType: FC = () => {
   });
   const navigate = useNavigate();
 
-  const handleNextStep = () => {
-    navigate("/create-tournament/add-players", { state: formData });
+  const handleNextStep = (url: string) => {
+    return () => navigate(url, { state: formData });
   };
 
   const renderSwitch = (): React.ReactNode => {
@@ -120,13 +121,49 @@ export const ChooseTournamentType: FC = () => {
                   return `Current configuration translates to ${matchesPerTeam} matches per team and at most ${Math.ceil(matchesPerTurn)} matches per turn.`;
                 }
               }}
+              quantityDescription="Number of teams"
             />
             <Button
               type="button"
               variant="contained"
               size="large"
               fullWidth
-              onClick={handleNextStep}
+              onClick={handleNextStep("/create-tournament/add-teams")}
+              disabled={!formData.tournamentDate || !formData.numberOfTeams}
+            >
+              Next: Add teams
+            </Button>
+          </>
+        );
+      }
+
+      case "SinglePlayerRodeo": {
+        return (
+          <>
+            <TournamentParams
+              formData={formData}
+              setFormData={setFormData}
+              helperText={() => {
+                const [totalMatches, matchesPerTurn, matchesPerPerson] =
+                  getMatchesPerPerson(
+                    formData.numberOfTeams,
+                    formData.roundsNumber,
+                    formData.availableCourts,
+                  );
+                if (totalMatches === 0) {
+                  return "Configuration is not valid";
+                } else {
+                  return `Current configuration translates to ${matchesPerPerson} matches per person, at most ${Math.ceil(matchesPerTurn)} matches per turn, ${totalMatches} total matches.`;
+                }
+              }}
+              quantityDescription="Number of people"
+            />
+            <Button
+              type="button"
+              variant="contained"
+              size="large"
+              fullWidth
+              onClick={handleNextStep("/create-tournament/add-players")}
               disabled={!formData.tournamentDate || !formData.numberOfTeams}
             >
               Next: Add Players
