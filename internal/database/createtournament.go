@@ -28,8 +28,8 @@ func queryInsertTeam(ctx context.Context, tx pgx.Tx, team1 tournament.Team) (int
         (SELECT id FROM upserted_people WHERE name = $2)
     RETURNING id;`
 
-	person1 := team1.Person_1.Id
-	person2 := team1.Person_2.Id
+	person1 := team1.Person1.Id
+	person2 := team1.Person2.Id
 
 	var id int64
 	if err := tx.QueryRow(ctx, sql, person1, person2).Scan(&id); err != nil {

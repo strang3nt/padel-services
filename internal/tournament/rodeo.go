@@ -1,6 +1,7 @@
 package tournament
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -48,4 +49,34 @@ func MakeRodeo(name string, dateStart time.Time, teams []Team, rounds []Round) R
 
 func (rodeo *Rodeo) GetTournamentType() TournamentType {
 	return TournamentTypeRodeo
+}
+
+func (rodeo Rodeo) GetResting(round int, separator string) []string {
+	if round > len(rodeo.Rounds)-1 || round < 0 {
+		return []string{}
+	}
+
+	teams := make(map[Team]any)
+
+	for _, t := range rodeo.Teams {
+		teams[t] = struct{}{}
+	}
+
+	for _, m := range rodeo.Rounds[round].Matches {
+		team1 := m.TeamA
+		team2 := m.TeamB
+
+		delete(teams, *team1)
+		delete(teams, *team2)
+	}
+
+	res := make([]string, 0)
+	for t := range teams {
+		res = append(
+			res,
+			fmt.Sprintf("%s %s %s", t.Person1, separator, t.Person2),
+		)
+	}
+
+	return res
 }

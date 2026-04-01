@@ -32,23 +32,23 @@ func (p Person) IsNil() bool {
 }
 
 type Team struct {
-	Person_1   Person `json:"person1"`
-	Person_2   Person `json:"person2"`
+	Person1    Person `json:"person1"`
+	Person2    Person `json:"person2"`
 	TeamGender Gender `json:"gender"`
 }
 
 func NewTeam(person1, person2 Person, teamGender Gender) *Team {
 	return &Team{
-		Person_1:   person1,
-		Person_2:   person2,
+		Person1:    person1,
+		Person2:    person2,
 		TeamGender: teamGender,
 	}
 }
 
 func MakeTeam(person1, person2 Person, teamGender Gender) Team {
 	return Team{
-		Person_1:   person1,
-		Person_2:   person2,
+		Person1:    person1,
+		Person2:    person2,
 		TeamGender: teamGender,
 	}
 }
@@ -67,7 +67,7 @@ func GetPeople(teams []Team) []Person {
 	res := make([]Person, 0)
 
 	for _, t := range teams {
-		ps := []Person{t.Person_1, t.Person_2}
+		ps := []Person{t.Person1, t.Person2}
 
 		for _, p := range ps {
 			if !p.IsNil() {

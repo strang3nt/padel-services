@@ -1,6 +1,7 @@
 package tournament
 
 import (
+	"fmt"
 	"runtime"
 	"testing"
 	"time"
@@ -103,6 +104,62 @@ func TestGenerateSinglePlayerRodeo(t *testing.T) {
 
 			t.Errorf(
 				"generated %v matches, expected 2, with tournament %v", totalMatches, tournament,
+			)
+		}
+	})
+
+}
+
+func TestGenerateSinglePlayerRodeo25People(t *testing.T) {
+
+	people := make(map[Person]any)
+
+	for i := range 25 {
+		people[Person{Id: fmt.Sprint(i)}] = struct{}{}
+	}
+
+	singlePlayerRodeoFactory := SinglePlayerRodeoFactory{
+		MaxRounds:       10,
+		AvailableCourts: 4,
+		People:          people,
+	}
+
+	tournament, err := singlePlayerRodeoFactory.GetFirstValidTournament(
+		10*time.Second,
+		runtime.NumCPU(),
+		time.Now(),
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error encountered while building single player rodeo: %v", err)
+	}
+
+	t.Run("generated tournament has 50 possible teams", func(t *testing.T) {
+
+		teams := tournament.Teams
+		teamsMap := make(map[Team]any)
+		for _, t := range teams {
+			teamsMap[t] = struct{}{}
+		}
+		if len(teamsMap) != 50 {
+
+			t.Errorf(
+				"generated %d different teams, expected 50", len(teamsMap),
+			)
+		}
+	})
+
+	t.Run("generated tournament has 25 matches", func(t *testing.T) {
+
+		rounds := tournament.Rounds
+		totalMatches := 0
+		for _, r := range rounds {
+			totalMatches += len(r.Matches)
+		}
+		if totalMatches != 25 {
+
+			t.Errorf(
+				"generated %v matches, expected 25, with tournament %v", totalMatches, tournament,
 			)
 		}
 	})

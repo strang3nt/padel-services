@@ -141,7 +141,7 @@
                 <table class="table is-narrow is-fullwidth mb-0">
                   <tbody>
                     <tr class="is-size-7">
-                      <td class="has-text-right" style="width: 45%;">{{.TeamA}}</td>
+                      <td class="has-text-right has-text-weight-semibold" style="width: 45%;">{{.TeamA}}</td>
                       <td class="has-background-brand-red-light has-text-centered" style="width: 10%;">{{.ScoreA}}</td>
                     </tr>
                     <tr class="is-size-7">
@@ -156,6 +156,25 @@
           </div>
           {{ end }}
         </div>
+
+
+{{ if .Resting }}
+<div class="has-background-white-ter p-2" style="border-top: 1px solid #dbdbdb;">
+    <div class="is-flex is-align-items-center is-justify-content-center">
+        <span class="is-size-7 has-text-weight-bold is-uppercase mr-3 has-text-grey">
+            <i class="fas fa-bed mr-1"></i> A RIPOSO:
+        </span>
+        <div class="is-size-7">
+            {{range $i, $name := .Resting}}
+                {{if $i}}, {{end}}<strong>{{$name}}</strong>
+            {{end}}
+        </div>
+    </div>
+</div>
+{{ end }}
+
+
+
 
       </div>
     </div>

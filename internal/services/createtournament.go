@@ -40,7 +40,9 @@ func CreateTournament(
 		peopleMap := make(map[tournament.Person]any)
 
 		for _, p := range tournament.GetPeople(teams) {
-			peopleMap[p] = struct{}{}
+			if p.Id != "" {
+				peopleMap[p] = struct{}{}
+			}
 		}
 
 		rodeo_factory := tournament.SinglePlayerRodeoFactory{

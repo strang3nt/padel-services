@@ -19,53 +19,53 @@ func (rf *RodeoFactory) makeEdgesN6K3() matching {
 func TestMakeMatchesWithGendersSplit(t *testing.T) {
 
 	team1 := Team{
-		Person_1:   Person{Id: "Team1_P1"},
-		Person_2:   Person{Id: "Team1_P2"},
+		Person1:    Person{Id: "Team1_P1"},
+		Person2:    Person{Id: "Team1_P2"},
 		TeamGender: Male,
 	}
 	team2 := Team{
-		Person_1:   Person{Id: "Team2_P1"},
-		Person_2:   Person{Id: "Team2_P2"},
+		Person1:    Person{Id: "Team2_P1"},
+		Person2:    Person{Id: "Team2_P2"},
 		TeamGender: Male,
 	}
 	team3 := Team{
-		Person_1:   Person{Id: "Team3_P1"},
-		Person_2:   Person{Id: "Team3_P2"},
+		Person1:    Person{Id: "Team3_P1"},
+		Person2:    Person{Id: "Team3_P2"},
 		TeamGender: Male,
 	}
 	team4 := Team{
-		Person_1:   Person{Id: "Team4_P1"},
-		Person_2:   Person{Id: "Team4_P2"},
+		Person1:    Person{Id: "Team4_P1"},
+		Person2:    Person{Id: "Team4_P2"},
 		TeamGender: Male,
 	}
 	team5 := Team{
-		Person_1:   Person{Id: "Team5_P1"},
-		Person_2:   Person{Id: "Team5_P2"},
+		Person1:    Person{Id: "Team5_P1"},
+		Person2:    Person{Id: "Team5_P2"},
 		TeamGender: Male,
 	}
 	team6 := Team{
-		Person_1:   Person{Id: "Team6_P1"},
-		Person_2:   Person{Id: "Team6_P2"},
+		Person1:    Person{Id: "Team6_P1"},
+		Person2:    Person{Id: "Team6_P2"},
 		TeamGender: Female,
 	}
 	team7 := Team{
-		Person_1:   Person{Id: "Team7_P1"},
-		Person_2:   Person{Id: "Team7_P2"},
+		Person1:    Person{Id: "Team7_P1"},
+		Person2:    Person{Id: "Team7_P2"},
 		TeamGender: Female,
 	}
 	team8 := Team{
-		Person_1:   Person{Id: "Team8_P1"},
-		Person_2:   Person{Id: "Team8_P2"},
+		Person1:    Person{Id: "Team8_P1"},
+		Person2:    Person{Id: "Team8_P2"},
 		TeamGender: Female,
 	}
 	team9 := Team{
-		Person_1:   Person{Id: "Team9_P1"},
-		Person_2:   Person{Id: "Team9_P2"},
+		Person1:    Person{Id: "Team9_P1"},
+		Person2:    Person{Id: "Team9_P2"},
 		TeamGender: Female,
 	}
 	team10 := Team{
-		Person_1:   Person{Id: "Team10_P1"},
-		Person_2:   Person{Id: "Team10_P2"},
+		Person1:    Person{Id: "Team10_P1"},
+		Person2:    Person{Id: "Team10_P2"},
 		TeamGender: Female,
 	}
 
@@ -98,9 +98,9 @@ func TestMakeMatchesWithGendersSplit(t *testing.T) {
 				if teamA.TeamGender != teamB.TeamGender {
 					t.Errorf(
 						"Found mixed gender match in a gender split tournament: Team %s (%v) vs Team %s (%v)",
-						teamA.Person_1.Id,
+						teamA.Person1.Id,
 						teamA.TeamGender,
-						teamB.Person_1.Id,
+						teamB.Person1.Id,
 						teamB.TeamGender,
 					)
 				}
@@ -193,43 +193,43 @@ func TestMakeMatchingsBruteForceGraph_N6K3(t *testing.T) {
 
 func TestMakeTournamentN8K8(t *testing.T) {
 	team1 := Team{
-		Person_1:   Person{Id: "Elena Miotto"},
-		Person_2:   Person{Id: "Alberto Rampazzo"},
+		Person1:    Person{Id: "Elena Miotto"},
+		Person2:    Person{Id: "Alberto Rampazzo"},
 		TeamGender: Male,
 	}
 	team2 := Team{
-		Person_1:   Person{Id: "Marcos Vera"},
-		Person_2:   Person{Id: "Santiago Alonso"},
+		Person1:    Person{Id: "Marcos Vera"},
+		Person2:    Person{Id: "Santiago Alonso"},
 		TeamGender: Male,
 	}
 	team3 := Team{
-		Person_1:   Person{Id: "Diego Arrieta"},
-		Person_2:   Person{Id: "Marcelo Merino"},
+		Person1:    Person{Id: "Diego Arrieta"},
+		Person2:    Person{Id: "Marcelo Merino"},
 		TeamGender: Male,
 	}
 	team4 := Team{
-		Person_1:   Person{Id: "Cristian Garcia"},
-		Person_2:   Person{Id: "Jorge Torres"},
+		Person1:    Person{Id: "Cristian Garcia"},
+		Person2:    Person{Id: "Jorge Torres"},
 		TeamGender: Male,
 	}
 	team5 := Team{
-		Person_1:   Person{Id: "Juan Perez"},
-		Person_2:   Person{Id: "Pedro Rodriguez"},
+		Person1:    Person{Id: "Juan Perez"},
+		Person2:    Person{Id: "Pedro Rodriguez"},
 		TeamGender: Male,
 	}
 	team6 := Team{
-		Person_1:   Person{Id: "Maria Gomez"},
-		Person_2:   Person{Id: "Ana Lopez"},
+		Person1:    Person{Id: "Maria Gomez"},
+		Person2:    Person{Id: "Ana Lopez"},
 		TeamGender: Female,
 	}
 	team7 := Team{
-		Person_1:   Person{Id: "Laura Martinez"},
-		Person_2:   Person{Id: "Carolina Rodriguez"},
+		Person1:    Person{Id: "Laura Martinez"},
+		Person2:    Person{Id: "Carolina Rodriguez"},
 		TeamGender: Female,
 	}
 	team8 := Team{
-		Person_1:   Person{Id: "Sofia Ramirez"},
-		Person_2:   Person{Id: "Isabella Torres"},
+		Person1:    Person{Id: "Sofia Ramirez"},
+		Person2:    Person{Id: "Isabella Torres"},
 		TeamGender: Female,
 	}
 
@@ -275,53 +275,53 @@ func TestMakeTournamentN8K8(t *testing.T) {
 func TestMakeTournamentN10K8(t *testing.T) {
 
 	team1 := Team{
-		Person_1:   Person{Id: "Elena Miotto"},
-		Person_2:   Person{Id: "Alberto Rampazzo"},
+		Person1:    Person{Id: "Elena Miotto"},
+		Person2:    Person{Id: "Alberto Rampazzo"},
 		TeamGender: Male,
 	}
 	team2 := Team{
-		Person_1:   Person{Id: "Marcos Vera"},
-		Person_2:   Person{Id: "Santiago Alonso"},
+		Person1:    Person{Id: "Marcos Vera"},
+		Person2:    Person{Id: "Santiago Alonso"},
 		TeamGender: Male,
 	}
 	team3 := Team{
-		Person_1:   Person{Id: "Diego Arrieta"},
-		Person_2:   Person{Id: "Marcelo Merino"},
+		Person1:    Person{Id: "Diego Arrieta"},
+		Person2:    Person{Id: "Marcelo Merino"},
 		TeamGender: Male,
 	}
 	team4 := Team{
-		Person_1:   Person{Id: "Cristian Garcia"},
-		Person_2:   Person{Id: "Jorge Torres"},
+		Person1:    Person{Id: "Cristian Garcia"},
+		Person2:    Person{Id: "Jorge Torres"},
 		TeamGender: Male,
 	}
 	team5 := Team{
-		Person_1:   Person{Id: "Juan Perez"},
-		Person_2:   Person{Id: "Pedro Rodriguez"},
+		Person1:    Person{Id: "Juan Perez"},
+		Person2:    Person{Id: "Pedro Rodriguez"},
 		TeamGender: Male,
 	}
 	team6 := Team{
-		Person_1:   Person{Id: "Maria Gomez"},
-		Person_2:   Person{Id: "Ana Lopez"},
+		Person1:    Person{Id: "Maria Gomez"},
+		Person2:    Person{Id: "Ana Lopez"},
 		TeamGender: Female,
 	}
 	team7 := Team{
-		Person_1:   Person{Id: "Laura Martinez"},
-		Person_2:   Person{Id: "Carolina Rodriguez"},
+		Person1:    Person{Id: "Laura Martinez"},
+		Person2:    Person{Id: "Carolina Rodriguez"},
 		TeamGender: Female,
 	}
 	team8 := Team{
-		Person_1:   Person{Id: "Sofia Ramirez"},
-		Person_2:   Person{Id: "Isabella Torres"},
+		Person1:    Person{Id: "Sofia Ramirez"},
+		Person2:    Person{Id: "Isabella Torres"},
 		TeamGender: Female,
 	}
 	team9 := Team{
-		Person_1:   Person{Id: "Marco Gaio"},
-		Person_2:   Person{Id: "Luigina Lodi"},
+		Person1:    Person{Id: "Marco Gaio"},
+		Person2:    Person{Id: "Luigina Lodi"},
 		TeamGender: Female,
 	}
 	team10 := Team{
-		Person_1:   Person{Id: "Federico Manca"},
-		Person_2:   Person{Id: "Alberto Alberti"},
+		Person1:    Person{Id: "Federico Manca"},
+		Person2:    Person{Id: "Alberto Alberti"},
 		TeamGender: Female,
 	}
 
@@ -375,63 +375,63 @@ func TestMakeTournamentN10K8(t *testing.T) {
 func TestMakeTournamentMaximiseMaleMatches(t *testing.T) {
 
 	team1 := Team{
-		Person_1:   Person{Id: "Elena Miotto"},
-		Person_2:   Person{Id: "Alberto Rampazzo"},
+		Person1:    Person{Id: "Elena Miotto"},
+		Person2:    Person{Id: "Alberto Rampazzo"},
 		TeamGender: Else,
 	}
 	team2 := Team{
-		Person_1:   Person{Id: "Marcos Vera"},
-		Person_2:   Person{Id: "Santiago Alonso"},
+		Person1:    Person{Id: "Marcos Vera"},
+		Person2:    Person{Id: "Santiago Alonso"},
 		TeamGender: Male,
 	}
 	team3 := Team{
-		Person_1:   Person{Id: "Diego Arrieta"},
-		Person_2:   Person{Id: "Marcelo Merino"},
+		Person1:    Person{Id: "Diego Arrieta"},
+		Person2:    Person{Id: "Marcelo Merino"},
 		TeamGender: Male,
 	}
 	team4 := Team{
-		Person_1:   Person{Id: "Cristian Garcia"},
-		Person_2:   Person{Id: "Jorgina Torres"},
+		Person1:    Person{Id: "Cristian Garcia"},
+		Person2:    Person{Id: "Jorgina Torres"},
 		TeamGender: Else,
 	}
 	team5 := Team{
-		Person_1:   Person{Id: "Juanita Perez"},
-		Person_2:   Person{Id: "Pedro Rodriguez"},
+		Person1:    Person{Id: "Juanita Perez"},
+		Person2:    Person{Id: "Pedro Rodriguez"},
 		TeamGender: Else,
 	}
 	team6 := Team{
-		Person_1:   Person{Id: "Maria Gomez"},
-		Person_2:   Person{Id: "Ana Lopez"},
+		Person1:    Person{Id: "Maria Gomez"},
+		Person2:    Person{Id: "Ana Lopez"},
 		TeamGender: Female,
 	}
 	team7 := Team{
-		Person_1:   Person{Id: "Laura Martinez"},
-		Person_2:   Person{Id: "Carolina Rodriguez"},
+		Person1:    Person{Id: "Laura Martinez"},
+		Person2:    Person{Id: "Carolina Rodriguez"},
 		TeamGender: Female,
 	}
 	team8 := Team{
-		Person_1:   Person{Id: "Sofia Ramirez"},
-		Person_2:   Person{Id: "Isabella Torres"},
+		Person1:    Person{Id: "Sofia Ramirez"},
+		Person2:    Person{Id: "Isabella Torres"},
 		TeamGender: Female,
 	}
 	team9 := Team{
-		Person_1:   Person{Id: "Marco Gaio"},
-		Person_2:   Person{Id: "Luigina Lodi"},
+		Person1:    Person{Id: "Marco Gaio"},
+		Person2:    Person{Id: "Luigina Lodi"},
 		TeamGender: Else,
 	}
 	team10 := Team{
-		Person_1:   Person{Id: "Federica Manca"},
-		Person_2:   Person{Id: "Alberta Alberti"},
+		Person1:    Person{Id: "Federica Manca"},
+		Person2:    Person{Id: "Alberta Alberti"},
 		TeamGender: Female,
 	}
 	team11 := Team{
-		Person_1:   Person{Id: "Giorgia Neri"},
-		Person_2:   Person{Id: "Luca Bianchi"},
+		Person1:    Person{Id: "Giorgia Neri"},
+		Person2:    Person{Id: "Luca Bianchi"},
 		TeamGender: Else,
 	}
 	team12 := Team{
-		Person_1:   Person{Id: "Francesco Russo"},
-		Person_2:   Person{Id: "Giulio Ferrari"},
+		Person1:    Person{Id: "Francesco Russo"},
+		Person2:    Person{Id: "Giulio Ferrari"},
 		TeamGender: Male,
 	}
 

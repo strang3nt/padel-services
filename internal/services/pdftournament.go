@@ -27,6 +27,7 @@ type Match struct {
 type Round struct {
 	RoundNumber int
 	Matches     []Match
+	Resting     []string
 }
 
 type TournamentData struct {
@@ -179,6 +180,7 @@ func (tt TournamentPdfGenerator) generatePDFWithHeadlessChrome(
 }
 
 func FromTournamentToTemplateData(tournament tournament.Tournament) TemplateData {
+
 	return TemplateData{
 		Tournament: TournamentData{
 			Name:      tournament.GetName(),
@@ -186,19 +188,20 @@ func FromTournamentToTemplateData(tournament tournament.Tournament) TemplateData
 			Rounds: func() []Round {
 				var rounds []Round
 				for roundIndex, round := range tournament.GetRounds() {
+
 					var matches []Match
 					for _, match := range round.Matches {
 
-						surnamePerson1TeamA := strings.Split(match.TeamA.Person_1.Id, " ")
-						surnamePerson2TeamA := strings.Split(match.TeamA.Person_2.Id, " ")
-						surnamePerson1TeamB := strings.Split(match.TeamB.Person_1.Id, " ")
-						surnamePerson2TeamB := strings.Split(match.TeamB.Person_2.Id, " ")
+						surnamePerson1TeamA := strings.Split(match.TeamA.Person1.Id, " ")
+						surnamePerson2TeamA := strings.Split(match.TeamA.Person2.Id, " ")
+						surnamePerson1TeamB := strings.Split(match.TeamB.Person1.Id, " ")
+						surnamePerson2TeamB := strings.Split(match.TeamB.Person2.Id, " ")
 
 						matches = append(matches, Match{
 							Court:       strconv.Itoa(match.CourtId),
-							TeamA:       surnamePerson1TeamA[len(surnamePerson1TeamA)-1] + ", " + surnamePerson2TeamA[len(surnamePerson2TeamA)-1],
+							TeamA:       surnamePerson1TeamA[len(surnamePerson1TeamA)-1] + " - " + surnamePerson2TeamA[len(surnamePerson2TeamA)-1],
 							ScoreA:      "",
-							TeamB:       surnamePerson1TeamB[len(surnamePerson1TeamB)-1] + ", " + surnamePerson2TeamB[len(surnamePerson2TeamB)-1],
+							TeamB:       surnamePerson1TeamB[len(surnamePerson1TeamB)-1] + " - " + surnamePerson2TeamB[len(surnamePerson2TeamB)-1],
 							ScoreB:      "",
 							RoundNumber: roundIndex + 1,
 						})
@@ -206,6 +209,7 @@ func FromTournamentToTemplateData(tournament tournament.Tournament) TemplateData
 					rounds = append(rounds, Round{
 						RoundNumber: roundIndex + 1,
 						Matches:     matches,
+						Resting:     tournament.GetResting(roundIndex, "-"),
 					})
 				}
 				return rounds
@@ -225,10 +229,10 @@ func FromTournamentDataToTemplateData(tournament tournament.TournamentData) Temp
 					var matches []Match
 					for _, match := range round.Matches {
 
-						surnamePerson1TeamA := strings.Split(match.TeamA.Person_1.Id, " ")
-						surnamePerson2TeamA := strings.Split(match.TeamA.Person_2.Id, " ")
-						surnamePerson1TeamB := strings.Split(match.TeamB.Person_1.Id, " ")
-						surnamePerson2TeamB := strings.Split(match.TeamB.Person_2.Id, " ")
+						surnamePerson1TeamA := strings.Split(match.TeamA.Person1.Id, " ")
+						surnamePerson2TeamA := strings.Split(match.TeamA.Person2.Id, " ")
+						surnamePerson1TeamB := strings.Split(match.TeamB.Person1.Id, " ")
+						surnamePerson2TeamB := strings.Split(match.TeamB.Person2.Id, " ")
 
 						matches = append(matches, Match{
 							Court:       strconv.Itoa(match.CourtId),

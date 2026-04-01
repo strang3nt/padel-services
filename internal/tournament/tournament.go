@@ -22,6 +22,7 @@ type TournamentType int
 const (
 	TournamentTypeEmpty TournamentType = iota
 	TournamentTypeRodeo
+	TournamentTypeSinglePlayerRodeo
 )
 
 type Match struct {
@@ -36,6 +37,7 @@ type Tournament interface {
 	GetDateStart() time.Time
 	GetTeams() []Team
 	GetRounds() []Round
+	GetResting(round int, separator string) []string
 	GetTournamentType() TournamentType
 }
 
@@ -56,6 +58,8 @@ func TournamentTypeToString(t TournamentType) (string, error) {
 	switch t {
 	case TournamentTypeRodeo:
 		return "Rodeo", nil
+	case TournamentTypeSinglePlayerRodeo:
+		return "SinglePlayerRodeo", nil
 	default:
 		return "", fmt.Errorf("invalid tournament type: %d", t)
 	}

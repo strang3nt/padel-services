@@ -154,8 +154,8 @@ func buildTournamentData(
 		teamsResult = append(
 			teamsResult,
 			tournament.Team{
-				Person_1:   person1,
-				Person_2:   person2,
+				Person1:    person1,
+				Person2:    person2,
 				TeamGender: tournament.GenderFromString(t.Gender),
 			},
 		)

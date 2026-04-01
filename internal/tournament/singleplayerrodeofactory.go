@@ -158,7 +158,7 @@ func (rf *SinglePlayerRodeoFactory) generateTeams(matchesPerPerson int) []Team {
 func teamsContainSamePerson(l Team, r Team) bool {
 	counter := make(map[Person]any)
 
-	for _, p := range []Person{l.Person_1, l.Person_2, r.Person_1, r.Person_2} {
+	for _, p := range []Person{l.Person1, l.Person2, r.Person1, r.Person2} {
 		counter[p] = struct{}{}
 	}
 
