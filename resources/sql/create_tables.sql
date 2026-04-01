@@ -166,3 +166,4 @@ END;
 INSERT INTO gender (id, name) VALUES (1, 'Male');
 INSERT INTO gender (id, name) VALUES (2, 'Female');
 INSERT INTO tournament_type (id, name) VALUES (1, 'Rodeo');
+INSERT INTO tournament_type (id, name) VALUES (2, 'SinglePlayerRodeo');
