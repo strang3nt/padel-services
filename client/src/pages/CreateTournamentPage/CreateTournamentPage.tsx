@@ -153,7 +153,7 @@ export const ChooseTournamentType: FC = () => {
                 if (totalMatches === 0) {
                   return "Configuration is not valid";
                 } else {
-                  return `Current configuration translates to ${matchesPerPerson} matches per person, at most ${Math.ceil(matchesPerTurn)} matches per turn, ${totalMatches} total matches.`;
+                  return `Current configuration translates to ${Math.floor(matchesPerPerson)} matches per person, at most ${Math.ceil(matchesPerTurn)} matches per turn, ${totalMatches} total matches.`;
                 }
               }}
               quantityDescription="Number of people"
