@@ -84,6 +84,10 @@ func main() {
 	}
 	whitelistedIDs := MakeAllowerUsersFromUserData(users)
 
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
 	r.POST("/auth", func(c *gin.Context) {
 		var req AuthRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -145,6 +149,13 @@ func main() {
 				c.JSON(400, gin.H{"error": "Payload missing"})
 				return
 			}
+
+			log.Printf(
+				"creating tournament %s, at date %s, with %v teams",
+				tournamentType,
+				dateStart,
+				len(teams),
+			)
 
 			tournament := services.CreateTournament(
 				tournamentType,
