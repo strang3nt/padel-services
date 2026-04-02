@@ -44,15 +44,8 @@ type TournamentType int
 
 const (
 	Rodeo TournamentType = iota
+	SinglePlayerRodeo
 )
-
-var tournamentType = map[TournamentType]string{
-	Rodeo: "Rodeo",
-}
-
-func (tt TournamentType) String() string {
-	return tournamentType[tt]
-}
 
 type TournamentPdfGenerator struct {
 	chromeExecutable string
@@ -72,7 +65,8 @@ func MakeTournamentPdfGenerator() TournamentPdfGenerator {
 	return TournamentPdfGenerator{
 		chromeExecutable: chromeExecutable,
 		templatesDirs: map[TournamentType]*template.Template{
-			Rodeo: templateRodeoSchedule,
+			Rodeo:             templateRodeoSchedule,
+			SinglePlayerRodeo: templateRodeoSchedule,
 		},
 	}
 
@@ -110,7 +104,7 @@ func (tt TournamentPdfGenerator) runTemplate(
 
 	tournamentTemplate, ok := tt.templatesDirs[tournamentType]
 	if !ok {
-		return "", fmt.Errorf("unexpected tournament type: %s", tournamentType)
+		return "", fmt.Errorf("unexpected tournament type: %v", tournamentType)
 	}
 
 	templateData := map[string]any{
@@ -181,75 +175,57 @@ func (tt TournamentPdfGenerator) generatePDFWithHeadlessChrome(
 
 func FromTournamentToTemplateData(tournament tournament.Tournament) TemplateData {
 
+	var rounds []Round
+	for roundIndex, round := range tournament.GetRounds() {
+
+		var matches []Match
+		for _, match := range round.Matches {
+
+			surnamePerson1TeamA := strings.Split(match.TeamA.Person1.Id, " ")
+			surnamePerson2TeamA := strings.Split(match.TeamA.Person2.Id, " ")
+			surnamePerson1TeamB := strings.Split(match.TeamB.Person1.Id, " ")
+			surnamePerson2TeamB := strings.Split(match.TeamB.Person2.Id, " ")
+
+			matches = append(matches, Match{
+				Court:       strconv.Itoa(match.CourtId),
+				TeamA:       surnamePerson1TeamA[len(surnamePerson1TeamA)-1] + " - " + surnamePerson2TeamA[len(surnamePerson2TeamA)-1],
+				ScoreA:      "",
+				TeamB:       surnamePerson1TeamB[len(surnamePerson1TeamB)-1] + " - " + surnamePerson2TeamB[len(surnamePerson2TeamB)-1],
+				ScoreB:      "",
+				RoundNumber: roundIndex + 1,
+			})
+		}
+
+		resting := tournament.GetResting(roundIndex, "-")
+		log.Printf(
+			"tournament %v, date %v, round %v, resting %v",
+			tournament.GetName(),
+			tournament.GetDateStart(),
+			roundIndex,
+			resting,
+		)
+
+		rounds = append(rounds, Round{
+			RoundNumber: roundIndex + 1,
+			Matches:     matches,
+			Resting:     resting,
+		})
+	}
+
 	return TemplateData{
 		Tournament: TournamentData{
 			Name:      tournament.GetName(),
 			StartDate: tournament.GetDateStart().Format("2006-01-02"),
-			Rounds: func() []Round {
-				var rounds []Round
-				for roundIndex, round := range tournament.GetRounds() {
-
-					var matches []Match
-					for _, match := range round.Matches {
-
-						surnamePerson1TeamA := strings.Split(match.TeamA.Person1.Id, " ")
-						surnamePerson2TeamA := strings.Split(match.TeamA.Person2.Id, " ")
-						surnamePerson1TeamB := strings.Split(match.TeamB.Person1.Id, " ")
-						surnamePerson2TeamB := strings.Split(match.TeamB.Person2.Id, " ")
-
-						matches = append(matches, Match{
-							Court:       strconv.Itoa(match.CourtId),
-							TeamA:       surnamePerson1TeamA[len(surnamePerson1TeamA)-1] + " - " + surnamePerson2TeamA[len(surnamePerson2TeamA)-1],
-							ScoreA:      "",
-							TeamB:       surnamePerson1TeamB[len(surnamePerson1TeamB)-1] + " - " + surnamePerson2TeamB[len(surnamePerson2TeamB)-1],
-							ScoreB:      "",
-							RoundNumber: roundIndex + 1,
-						})
-					}
-					rounds = append(rounds, Round{
-						RoundNumber: roundIndex + 1,
-						Matches:     matches,
-						Resting:     tournament.GetResting(roundIndex, "-"),
-					})
-				}
-				return rounds
-			}(),
+			Rounds:    rounds,
 		},
 	}
 }
 
 func FromTournamentDataToTemplateData(tournament tournament.TournamentData) TemplateData {
-	return TemplateData{
-		Tournament: TournamentData{
-			Name:      tournament.Name,
-			StartDate: tournament.Date.Format("2006-01-02"),
-			Rounds: func() []Round {
-				var rounds []Round
-				for roundIndex, round := range tournament.Rounds {
-					var matches []Match
-					for _, match := range round.Matches {
 
-						surnamePerson1TeamA := strings.Split(match.TeamA.Person1.Id, " ")
-						surnamePerson2TeamA := strings.Split(match.TeamA.Person2.Id, " ")
-						surnamePerson1TeamB := strings.Split(match.TeamB.Person1.Id, " ")
-						surnamePerson2TeamB := strings.Split(match.TeamB.Person2.Id, " ")
-
-						matches = append(matches, Match{
-							Court:       strconv.Itoa(match.CourtId),
-							TeamA:       surnamePerson1TeamA[len(surnamePerson1TeamA)-1] + ", " + surnamePerson2TeamA[len(surnamePerson2TeamA)-1],
-							ScoreA:      "",
-							TeamB:       surnamePerson1TeamB[len(surnamePerson1TeamB)-1] + ", " + surnamePerson2TeamB[len(surnamePerson2TeamB)-1],
-							ScoreB:      "",
-							RoundNumber: roundIndex + 1,
-						})
-					}
-					rounds = append(rounds, Round{
-						RoundNumber: roundIndex + 1,
-						Matches:     matches,
-					})
-				}
-				return rounds
-			}(),
-		},
+	res := tournament.ToTournament()
+	if res == nil {
+		return TemplateData{}
 	}
+	return FromTournamentToTemplateData(res)
 }

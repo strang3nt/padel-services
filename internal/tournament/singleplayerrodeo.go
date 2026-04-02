@@ -27,8 +27,13 @@ func (rodeo *SinglePlayerRodeo) GetRounds() []Round {
 	return rodeo.Rounds
 }
 
-func NewSinglePlayerRodeo(name string, dateStart time.Time, teams []Team, rounds []Round) *Rodeo {
-	return &Rodeo{
+func NewSinglePlayerRodeo(
+	name string,
+	dateStart time.Time,
+	teams []Team,
+	rounds []Round,
+) *SinglePlayerRodeo {
+	return &SinglePlayerRodeo{
 		Name:      name,
 		DateStart: dateStart,
 		Teams:     teams,
@@ -36,8 +41,13 @@ func NewSinglePlayerRodeo(name string, dateStart time.Time, teams []Team, rounds
 	}
 }
 
-func MakeSinglePlayerRodeo(name string, dateStart time.Time, teams []Team, rounds []Round) Rodeo {
-	return Rodeo{
+func MakeSinglePlayerRodeo(
+	name string,
+	dateStart time.Time,
+	teams []Team,
+	rounds []Round,
+) SinglePlayerRodeo {
+	return SinglePlayerRodeo{
 
 		Name:      name,
 		DateStart: dateStart,
@@ -58,7 +68,8 @@ func (rodeo SinglePlayerRodeo) getPeople() map[Person]any {
 		people[t.Person1] = struct{}{}
 		people[t.Person2] = struct{}{}
 	}
-	return make(map[Person]any)
+	return people
+
 }
 
 func (rodeo SinglePlayerRodeo) GetResting(round int, separator string) []string {

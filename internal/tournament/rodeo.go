@@ -63,18 +63,18 @@ func (rodeo Rodeo) GetResting(round int, separator string) []string {
 	}
 
 	for _, m := range rodeo.Rounds[round].Matches {
-		team1 := m.TeamA
-		team2 := m.TeamB
+		team1 := *m.TeamA
+		team2 := *m.TeamB
 
-		delete(teams, *team1)
-		delete(teams, *team2)
+		delete(teams, team1)
+		delete(teams, team2)
 	}
 
 	res := make([]string, 0)
 	for t := range teams {
 		res = append(
 			res,
-			fmt.Sprintf("%s %s %s", t.Person1, separator, t.Person2),
+			fmt.Sprintf("%s %s %s", t.Person1.Id, separator, t.Person2.Id),
 		)
 	}
 

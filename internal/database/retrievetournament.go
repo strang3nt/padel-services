@@ -103,7 +103,13 @@ func GetTournamentsByDate(
 
 		tournaments = append(
 			tournaments,
-			buildTournamentData(id.TournamentType, tournamentDate, matches, teams),
+			buildTournamentData(
+				id.TournamentType,
+				tournamentDate,
+				matches,
+				teams,
+				id.TournamentType,
+			),
 		)
 
 	}
@@ -116,7 +122,8 @@ func buildTournamentData(
 	tournamentName string,
 	startDate time.Time,
 	matches []match,
-	teams []team) tournament.TournamentData {
+	teams []team,
+	tournamentType string) tournament.TournamentData {
 
 	teamsMap := make(map[int64]*tournament.Team)
 	matchesMap := make(map[int][]struct {
@@ -181,5 +188,13 @@ func buildTournamentData(
 		rounds[k] = tournament.Round{Matches: round}
 	}
 
-	return tournament.MakeTournamentData(tournamentName, startDate, teamsResult, rounds)
+	tournamentTypeObj, _ := tournament.TournamentTypeFromString(tournamentType)
+
+	return tournament.MakeTournamentData(
+		tournamentName,
+		startDate,
+		teamsResult,
+		rounds,
+		tournamentTypeObj,
+	)
 }

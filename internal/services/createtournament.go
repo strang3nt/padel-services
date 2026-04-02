@@ -18,6 +18,7 @@ func CreateTournament(
 
 	switch tournamentType {
 	case "Rodeo":
+		log.Print("creating rodeo tournament")
 		rodeo_factory := tournament.RodeoFactory{
 			MaxRounds:       totalRounds,
 			AvailableCourts: availableCourts,
@@ -36,6 +37,7 @@ func CreateTournament(
 
 		return rodeoInstance
 	case "SinglePlayerRodeo":
+		log.Print("creating single player rodeo")
 
 		peopleMap := make(map[tournament.Person]any)
 

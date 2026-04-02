@@ -89,6 +89,8 @@ func queryCreateTournament(
     VALUES ($1, (SELECT id FROM tournament_type WHERE name = $2), $3)
     RETURNING id;`
 
+	log.Printf("tournament type %v", tournamentType)
+
 	var id int64
 	if err := tx.QueryRow(ctx, sql, tournamentDate, tournamentType, userId).Scan(&id); err != nil {
 		return -1, fmt.Errorf("error while creating tournament: %w", err)
@@ -115,11 +117,13 @@ func CreateTournament(
 		}
 	}()
 
+	log.Printf("tournament type is %v", t.GetTournamentType())
 	tournamentType, err := tournament.TournamentTypeToString(t.GetTournamentType())
 	if err != nil {
 		return fmt.Errorf("error converting tournament type to string: %w", err)
 	}
 
+	log.Printf("tournament type to string is %v", tournamentType)
 	tournamentId, err := queryCreateTournament(ctx, tx, userId, t.GetDateStart(), tournamentType)
 	if err != nil {
 		return err

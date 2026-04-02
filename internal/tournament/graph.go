@@ -19,9 +19,6 @@ type matching map[edge]struct{}
 type matchings []matching
 
 func (m *matching) addCanonicalEdge(nodeA int, nodeB int) {
-	if *m == nil {
-		*m = make(matching)
-	}
 
 	var e edge
 	if nodeA < nodeB {

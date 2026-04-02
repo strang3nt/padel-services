@@ -18,12 +18,12 @@ func (rf *SinglePlayerRodeoFactory) GetFirstValidTournament(
 	timeout time.Duration,
 	count int,
 	start time.Time,
-) (*Rodeo, error) {
+) (*SinglePlayerRodeo, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	resultChan := make(chan *Rodeo, count)
+	resultChan := make(chan *SinglePlayerRodeo, count)
 
 	for i := range count {
 		go func(id int) {
@@ -49,7 +49,7 @@ func (rf *SinglePlayerRodeoFactory) GetFirstValidTournament(
 
 func (rf *SinglePlayerRodeoFactory) MakeTournament(
 	ctx context.Context,
-	dateStart time.Time) (*Rodeo, error) {
+	dateStart time.Time) (*SinglePlayerRodeo, error) {
 	n := len(rf.People)
 	nodes := make([]int, n)
 	for i := range n {
@@ -128,7 +128,15 @@ func (rf *SinglePlayerRodeoFactory) MakeTournament(
 
 		turns = append(turns, Round{matches})
 	}
-	return NewRodeo("Single Player Rodeo", dateStart, teams, turns), nil
+
+	singlePlayerRodeo := MakeSinglePlayerRodeo(
+		"Single Player Rodeo",
+		dateStart,
+		teams,
+		turns,
+	)
+
+	return &singlePlayerRodeo, nil
 }
 
 func (rf *SinglePlayerRodeoFactory) generateTeams(matchesPerPerson int) []Team {
