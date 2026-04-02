@@ -1,7 +1,6 @@
 package tournament
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -85,7 +84,7 @@ func (rodeo SinglePlayerRodeo) GetResting(round int, separator string) []string 
 	for p := range people {
 		res = append(
 			res,
-			fmt.Sprintf("%s", p.Id),
+			p.Id,
 		)
 	}
 
