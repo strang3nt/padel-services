@@ -2,7 +2,7 @@ services:
 
   webapp:
     build: .
-    env_file: .env.prod
+    env_file: .env.staging
     ports:
       - "8080:8080"
     depends_on:

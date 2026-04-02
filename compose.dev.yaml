@@ -3,7 +3,8 @@ services:
     image: node:20
     working_dir: /app
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     volumes:
       - ./client:/app
     ports:
@@ -11,22 +12,21 @@ services:
     command: npm run dev
 
   backend:
-    image: golang:1.25
-    volumes:
-      - .:/app
-      - /app/client
-      - /app/.git
-    working_dir: /app
-    environment:
-      - ENVIRONMENT=dev
-      - DATABASE_URL=postgres://aflori:password@db:5432/padel_services
+    build:
+      context: .
+      dockerfile: dev.backend.Dockerfile
+    env_file: .env.dev
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --method=GET --output-document=/dev/null http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 2s
+      retries: 3
+      start_period: 15s
     depends_on:
       db:
         condition: service_healthy
-
     ports:
       - "8080:8080"
-    command: ./start.development.sh
 
   db:
     image: postgres:latest
