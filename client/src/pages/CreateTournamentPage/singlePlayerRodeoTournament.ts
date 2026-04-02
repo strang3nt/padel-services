@@ -3,6 +3,10 @@ export function getMatchesPerPerson(
   totalRounds: number,
   availableCourts: number,
 ): [number, number, number] {
+  if (peopleNumber === 0 || totalRounds === 0 || availableCourts === 0) {
+    return [0, 0, 0];
+  }
+
   const totalSlots = 4 * totalRounds * availableCourts;
   let k = Math.floor(Math.min(totalSlots / peopleNumber, totalRounds));
 

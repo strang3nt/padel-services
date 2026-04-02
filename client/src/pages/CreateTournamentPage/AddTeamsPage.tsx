@@ -1,25 +1,21 @@
 import { useState, type FC } from "react";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
-import { genderToString } from "./utils";
 import { Team } from "@/pages/RetrieveTournamentPage";
 import { useAuth } from "@/components/AuthProvider";
 import { TournamentSetupData } from "./CreateTournamentPage";
 
-import Divider from "@mui/material/Divider";
 import Box from "@mui/material/Box";
 import InputLabel from "@mui/material/InputLabel";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import List from "@mui/material/List";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemText from "@mui/material/ListItemText";
-import ListItem from "@mui/material/ListItem";
-import CloseIcon from "@mui/icons-material/Close";
 import FormControl from "@mui/material/FormControl";
-import IconButton from "@mui/material/IconButton";
 import Snackbar from "@mui/material/Snackbar";
 import { Link } from "@/components/Link/Link.tsx";
+import { StatusDivider } from "@/components/StatusDivider";
+import { ActionList } from "@/components/ActionList";
 
 interface NotificationContent {
   title: string;
@@ -43,7 +39,7 @@ export function teamsLoader() {
   return { teams };
 }
 
-export const AddPlayersPage: FC = () => {
+export const AddTeamsPage: FC = () => {
   const loaderData = useLoaderData() as { teams: Team[] } | null;
   const teams = loaderData?.teams || [];
   const [_, setRefresh] = useState(false);
@@ -141,39 +137,20 @@ export const AddPlayersPage: FC = () => {
           />
         </Box>
       )}
-      <Divider textAlign="center">
-        Teams Added ({teams.length} / {config.numberOfTeams})
-      </Divider>
+      <StatusDivider
+        label="Teams added"
+        current={teams.length}
+        total={config.numberOfTeams}
+        isFull={isRosterFull}
+      />
 
-      <List>
-        {teams.length === 0 ? (
-          <ListItem>
-            <ListItemText primary="No teams added yet" />
-          </ListItem>
-        ) : (
-          teams.map(
-            (
-              {
-                person1: { id: teammate1 },
-                person2: { id: teammate2 },
-                gender,
-              },
-              i,
-            ) => (
-              <ListItem key={i}>
-                <ListItemText
-                  primary={`${teammate1}, ${teammate2}`}
-                  secondary={`${genderToString(gender)} team`}
-                />
-                <IconButton onClick={() => handleDeleteTeam(i)}>
-                  <CloseIcon />
-                </IconButton>
-              </ListItem>
-            ),
-          )
-        )}
-      </List>
-
+      <ActionList
+        items={teams}
+        renderKey={(team) => `${team.person1.id}, ${team.person2.id}`}
+        getPrimaryText={(team) => `${team.person1.id}, ${team.person2.id}`}
+        onDelete={(index) => handleDeleteTeam(index)}
+        emptyMessage="No teams added."
+      />
       <Button
         variant="contained"
         fullWidth
@@ -210,7 +187,7 @@ export const AddTeamPage: FC = () => {
 
     tournamentStore.addTeam(newTeam);
 
-    navigate("/create-tournament/add-players", {
+    navigate("/create-tournament/add-teams", {
       state: data,
       replace: true,
     });

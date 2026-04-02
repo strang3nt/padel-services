@@ -34,6 +34,7 @@ export interface TournamentData {
   date: string;
   teams: Team[];
   rounds: Matches[];
+  tournamentType: string;
 }
 
 export interface Tournaments {

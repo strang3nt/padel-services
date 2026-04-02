@@ -4,7 +4,7 @@ import {
 } from "@/pages/CreateTournamentPage/CreateTournamentPage";
 
 import {
-  AddPlayersPage,
+  AddTeamsPage,
   AddTeamPage,
   teamsLoader,
 } from "@/pages/CreateTournamentPage/AddTeamsPage";
@@ -47,7 +47,7 @@ export const routes: RouteObject[] = [
           },
           {
             path: "/create-tournament/add-teams",
-            element: <AddPlayersPage />,
+            element: <AddTeamsPage />,
             loader: teamsLoader,
           },
           {

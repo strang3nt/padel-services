@@ -4,17 +4,14 @@ import { Person, Team } from "./tournament";
 import { useAuth } from "@/components/AuthProvider";
 import { TournamentSetupData } from "./CreateTournamentPage";
 
-import Divider from "@mui/material/Divider";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import List from "@mui/material/List";
 import ListItemText from "@mui/material/ListItemText";
-import ListItem from "@mui/material/ListItem";
-import CloseIcon from "@mui/icons-material/Close";
-import IconButton from "@mui/material/IconButton";
 import Snackbar from "@mui/material/Snackbar";
 import { Link } from "@/components/Link/Link.tsx";
+import { StatusDivider } from "@/components/StatusDivider";
+import { ActionList } from "@/components/ActionList";
 
 interface NotificationContent {
   title: string;
@@ -71,7 +68,7 @@ export const AddPeoplePage: FC = () => {
 
   const config = location.state as TournamentSetupData | null;
 
-  const handleDeleteTeam = (index: number) => {
+  const handleDeletePerson = (index: number) => {
     peopleStore.removePerson(index);
     setRefresh((prev) => !prev);
   };
@@ -158,26 +155,19 @@ export const AddPeoplePage: FC = () => {
           />
         </Box>
       )}
-      <Divider textAlign="center">
-        People Added ({people.length} / {config.numberOfTeams})
-      </Divider>
-
-      <List>
-        {people.length === 0 ? (
-          <ListItem>
-            <ListItemText primary="No person added yet" />
-          </ListItem>
-        ) : (
-          people.map(({ id: person }, i) => (
-            <ListItem key={i}>
-              <ListItemText primary={person} />
-              <IconButton onClick={() => handleDeleteTeam(i)}>
-                <CloseIcon />
-              </IconButton>
-            </ListItem>
-          ))
-        )}
-      </List>
+      <StatusDivider
+        label="People"
+        current={people.length}
+        total={config.numberOfTeams}
+        isFull={isRosterFull}
+      />
+      <ActionList
+        items={people}
+        renderKey={(person) => person.id}
+        getPrimaryText={(person) => person.id}
+        onDelete={(index) => handleDeletePerson(index)}
+        emptyMessage="No players added."
+      />
 
       <Button
         variant="contained"
