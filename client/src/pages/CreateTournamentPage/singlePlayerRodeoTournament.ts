@@ -7,8 +7,9 @@ export function getMatchesPerPerson(
     return [0, 0, 0];
   }
 
-  const totalSlots = 4 * totalRounds * availableCourts;
-  let k = Math.floor(Math.min(totalSlots / peopleNumber, totalRounds));
+  const maxMatchesPerRound = Math.min(peopleNumber / 4, availableCourts);
+  const maxTotalMatches = maxMatchesPerRound * totalRounds;
+  let k = Math.min((maxTotalMatches * 4) / peopleNumber, totalRounds);
 
   while ((peopleNumber * k) % 4 != 0 && k > 0) {
     k -= 1;
@@ -16,5 +17,6 @@ export function getMatchesPerPerson(
 
   const totalMatches = (k * peopleNumber) / 4;
   const matchesPerRound = Math.ceil(totalMatches / totalRounds);
+
   return [totalMatches, matchesPerRound, k];
 }

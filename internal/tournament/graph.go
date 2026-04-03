@@ -15,7 +15,7 @@ type edge struct {
 	P2 Node
 }
 
-type matching map[edge]struct{}
+type matching map[edge]any
 type matchings []matching
 
 func (m *matching) addCanonicalEdge(nodeA int, nodeB int) {

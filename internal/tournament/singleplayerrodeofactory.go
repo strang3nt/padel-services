@@ -78,12 +78,9 @@ func (rf *SinglePlayerRodeoFactory) MakeTournament(
 		forbidden[i] = make(map[int]any)
 	}
 
-	for i := range teams {
+	for i := 0; i < len(teams)-1; i += 1 {
 		team1 := teams[i]
 		for j := i + 1; j < len(teams); j += 1 {
-			if i == j {
-				continue
-			}
 			team2 := teams[j]
 
 			if teamsContainSamePerson(team1, team2) {
@@ -178,7 +175,7 @@ func (rf *SinglePlayerRodeoFactory) getGraph(teams []Team) Graph {
 	graph := MakeGraph()
 	n := len(teams)
 
-	for i := range teams {
+	for i := 0; i < n-1; i += 1 {
 		for j := i + 1; j < n; j += 1 {
 			if !teamsContainSamePerson(teams[i], teams[j]) {
 				graph.AddEdge(edge{
@@ -204,8 +201,9 @@ func getMatchesPerPerson(
 	availableCourts int,
 ) matchesPerPerson {
 
-	totalSlots := 4 * totalRounds * availableCourts
-	k := min(totalSlots/peopleNumber, totalRounds)
+	maxMatchesPerRound := min(peopleNumber/4, availableCourts)
+	maxTotalMatches := maxMatchesPerRound * totalRounds
+	k := min((maxTotalMatches*4)/peopleNumber, totalRounds)
 
 	for (peopleNumber*k)%4 != 0 && k > 0 {
 		k -= 1
@@ -241,11 +239,6 @@ func (rf *SinglePlayerRodeoFactory) makeMatchingsBacktracking(
 	targetMatches int,
 ) (matchings, error) {
 
-	var edgeList []edge
-	for e := range initialEdges.GetEdgesIterator() {
-		edgeList = append(edgeList, e)
-	}
-
 	buckets := make(matchings, totalMatchings)
 	for i := range buckets {
 		buckets[i] = make(matching)
@@ -257,7 +250,7 @@ func (rf *SinglePlayerRodeoFactory) makeMatchingsBacktracking(
 	}
 
 	remainingEdges := make(map[edge]struct{})
-	for _, e := range edgeList {
+	for e := range initialEdges.GetEdgesIterator() {
 		remainingEdges[e] = struct{}{}
 	}
 
@@ -270,6 +263,7 @@ func (rf *SinglePlayerRodeoFactory) makeMatchingsBacktracking(
 		forbidden,
 		maxMatchingSize,
 		targetMatches,
+		make(map[int]any),
 	)
 
 	if success {
@@ -299,6 +293,7 @@ func (rf *SinglePlayerRodeoFactory) solveRecursive(
 	forbidden map[int]map[int]any,
 	maxSize int,
 	targetMatches int,
+	nodeUsed map[int]any,
 ) (matchings, bool) {
 
 	select {
@@ -317,8 +312,16 @@ func (rf *SinglePlayerRodeoFactory) solveRecursive(
 
 	for e := range remainingEdges {
 		options := 0
+
+		if _, ok := nodeUsed[int(e.P1)]; ok {
+			continue
+		}
+		if _, ok := nodeUsed[int(e.P2)]; ok {
+			continue
+		}
 		for i := range buckets {
-			if !usedNodes[i].contains(int(e.P1)) && !usedNodes[i].contains(int(e.P2)) &&
+			if !usedNodes[i].contains(int(e.P1)) &&
+				!usedNodes[i].contains(int(e.P2)) &&
 				len(buckets[i]) < maxSize {
 
 				p1 := int(e.P1)
@@ -364,6 +367,9 @@ func (rf *SinglePlayerRodeoFactory) solveRecursive(
 
 			delete(remainingEdges, currentEdge)
 
+			nodeUsed[p1] = struct{}{}
+			nodeUsed[p2] = struct{}{}
+
 			sol, found := rf.solveRecursive(
 				ctx,
 				remainingEdges,
@@ -373,12 +379,15 @@ func (rf *SinglePlayerRodeoFactory) solveRecursive(
 				forbidden,
 				maxSize,
 				targetMatches,
+				nodeUsed,
 			)
 			if found {
 				return sol, true
 			}
 
 			remainingEdges[currentEdge] = struct{}{}
+			delete(nodeUsed, p1)
+			delete(nodeUsed, p2)
 			delete(bucketEdges, currentEdge)
 			delete(nodesInBucket, p1)
 			delete(nodesInBucket, p2)
