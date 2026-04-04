@@ -1,6 +1,6 @@
 import { useState, type FC } from "react";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
-import { Team } from "@/pages/RetrieveTournamentPage";
+import { Team } from "@/pages/tournament";
 import { useAuth } from "@/components/AuthProvider";
 import { TournamentSetupData } from "./CreateTournamentPage";
 

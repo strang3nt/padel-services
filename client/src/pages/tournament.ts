@@ -8,6 +8,19 @@ export interface Team {
   gender: number;
 }
 
+export function genderToString(g: number): string {
+  switch (g) {
+    case 0:
+      return "Male";
+    case 1:
+      return "Female";
+    case 2:
+      return "Mixed";
+    default:
+      throw Error("Team gender not recognized");
+  }
+}
+
 export interface Match {
   teamA: Team;
   teamB: Team;
@@ -24,6 +37,7 @@ export interface TournamentData {
   date: string;
   teams: Team[];
   rounds: Matches[];
+  tournamentType: string;
 }
 
 export interface Tournaments {

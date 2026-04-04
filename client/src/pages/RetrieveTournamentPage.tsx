@@ -7,40 +7,7 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Section from "@/components/Section";
-
-export interface Person {
-  id: string;
-}
-
-export interface Team {
-  person1: Person;
-  person2: Person;
-  gender: number;
-}
-
-export interface Match {
-  teamA: Team;
-  teamB: Team;
-  matchStatus: number;
-  courtId: number;
-}
-
-export interface Matches {
-  matches: Match[];
-}
-
-export interface TournamentData {
-  name: string;
-  date: string;
-  teams: Team[];
-  rounds: Matches[];
-  tournamentType: string;
-}
-
-export interface Tournaments {
-  date: string;
-  tournaments: TournamentData[];
-}
+import { Tournaments } from "@/pages/tournament";
 
 interface FormData {
   date: string;
