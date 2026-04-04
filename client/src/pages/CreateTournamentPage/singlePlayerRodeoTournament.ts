@@ -7,9 +7,15 @@ export function getMatchesPerPerson(
     return [0, 0, 0];
   }
 
-  const maxMatchesPerRound = Math.min(peopleNumber / 4, availableCourts);
+  const maxMatchesPerRound = Math.min(
+    Math.floor(peopleNumber / 4),
+    availableCourts,
+  );
   const maxTotalMatches = maxMatchesPerRound * totalRounds;
-  let k = Math.min((maxTotalMatches * 4) / peopleNumber, totalRounds);
+  let k = Math.min(
+    Math.floor((maxTotalMatches * 4) / peopleNumber),
+    totalRounds,
+  );
 
   while ((peopleNumber * k) % 4 != 0 && k > 0) {
     k -= 1;

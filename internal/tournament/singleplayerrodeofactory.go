@@ -64,7 +64,8 @@ func (rf *SinglePlayerRodeoFactory) MakeTournament(
 
 	roundsNumber := rf.MaxRounds
 
-	if matchesPerPerson.TotalMatches == 0 {
+	if matchesPerPerson.TotalMatches == 0 || matchesPerPerson.MatchesPerRound == 0 ||
+		matchesPerPerson.MatchesPerPerson == 0 {
 		return nil, errors.New(
 			"could not determine valid match parameters. Returning empty tournament",
 		)

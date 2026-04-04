@@ -1,9 +1,9 @@
-import { Team } from "@/api/tournament";
+import { Team, TournamentType } from "@/api/tournament";
 
 export default function createTournament(
   bearerToken: string,
   eventName: string,
-  tournamentType: string,
+  tournamentType: TournamentType,
   dateStart: Date,
   roundsNumber: number,
   availableCourts: number,
