@@ -32,12 +32,17 @@ export interface Matches {
   matches: Match[];
 }
 
+export enum TournamentType {
+  Rodeo = "Rodeo",
+  SinglePlayerRodeo = "SinglePlayerRodeo",
+}
+
 export interface TournamentData {
   name: string;
   date: string;
   teams: Team[];
   rounds: Matches[];
-  tournamentType: string;
+  tournamentType: TournamentType;
 }
 
 export interface Tournaments {

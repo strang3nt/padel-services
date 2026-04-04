@@ -81,6 +81,7 @@ func TestMakeMatchesWithGendersSplit(t *testing.T) {
 	}
 
 	tournament, err := rf.GetFirstValidTournament(
+		"rodeo",
 		10*time.Second,
 		runtime.NumCPU(),
 		teams,
@@ -244,7 +245,7 @@ func TestMakeTournamentN8K8(t *testing.T) {
 		AvailableCourts: 5,
 	}
 	ctx := context.Background()
-	rodeo, err := rodeoFactory.MakeTournament(ctx, teams, dateStart)
+	rodeo, err := rodeoFactory.MakeTournament(ctx, "rodeo", teams, dateStart)
 	if err != nil {
 		t.Fatalf("makeTournament returned an error: %v", err)
 	}
@@ -345,7 +346,7 @@ func TestMakeTournamentN10K8(t *testing.T) {
 		AvailableCourts: 5,
 	}
 	ctx := context.Background()
-	rodeo, err := rodeoFactory.MakeTournament(ctx, teams, dateStart)
+	rodeo, err := rodeoFactory.MakeTournament(ctx, "rodeo", teams, dateStart)
 	if err != nil {
 		t.Fatalf("makeTournament returned an error: %v", err)
 	}
@@ -457,7 +458,7 @@ func TestMakeTournamentMaximiseMaleMatches(t *testing.T) {
 		AvailableCourts: 6,
 	}
 	ctx := context.Background()
-	rodeo, err := rodeoFactory.MakeTournament(ctx, teams, dateStart)
+	rodeo, err := rodeoFactory.MakeTournament(ctx, "rodeo", teams, dateStart)
 	if err != nil {
 		t.Fatalf("makeTournament returned an error: %v", err)
 	}

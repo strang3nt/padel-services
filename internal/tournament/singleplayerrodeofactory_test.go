@@ -69,6 +69,7 @@ func TestGenerateSinglePlayerRodeo(t *testing.T) {
 	}
 
 	tournament, err := singlePlayerRodeoFactory.GetFirstValidTournament(
+		"single player rodeo",
 		10*time.Second,
 		runtime.NumCPU(),
 		time.Now(),
@@ -125,6 +126,7 @@ func TestGenerateSinglePlayerRodeo25People(t *testing.T) {
 	}
 
 	tournament, err := singlePlayerRodeoFactory.GetFirstValidTournament(
+		"single player rodeo",
 		10*time.Second,
 		runtime.NumCPU(),
 		time.Now(),

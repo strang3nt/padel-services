@@ -58,7 +58,7 @@ Chiarelli Tommaso, Ercolani Francesco`
 
 	scanner := bufio.NewScanner(strings.NewReader(msg))
 	teams, err := MakeTeamsFromMessage(scanner)
-	rodeo := CreateTournament("Rodeo", time.Now(), teams, 8, 5)
+	rodeo := CreateTournament("Super rodeo", "Rodeo", time.Now(), teams, 8, 5)
 
 	t.Logf("tournament created successfully: %+v", rodeo)
 

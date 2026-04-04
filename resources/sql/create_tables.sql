@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS team
 CREATE TABLE IF NOT EXISTS tournament
 (
     id serial NOT NULL,
+    event_name character varying(255) COLLATE pg_catalog."default",
     tournament_date timestamp without time zone NOT NULL,
     tournament_type_id integer,
     user_id bigint NOT NULL,

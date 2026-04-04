@@ -1,6 +1,6 @@
 import { useState, type FC } from "react";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
-import { Person, Team } from "@/pages/tournament";
+import { Person, Team } from "@/api/tournament";
 import { useAuth } from "@/components/AuthProvider";
 import { TournamentSetupData } from "./CreateTournamentPage";
 
@@ -12,6 +12,7 @@ import Snackbar from "@mui/material/Snackbar";
 import { Link } from "@/components/Link/Link.tsx";
 import { StatusDivider } from "@/components/StatusDivider";
 import { ActionList } from "@/components/ActionList";
+import createTournament from "@/api/createTournament";
 
 interface NotificationContent {
   title: string;
@@ -95,16 +96,14 @@ export const AddPeoplePage: FC = () => {
   const handleSendTournament = () => {
     const dateStart = new Date(config.tournamentDate);
 
-    fetch(
-      `/api/create-tournament?tournamentType=SinglePlayerRodeo&dateStart=${dateStart.toISOString()}&totalRounds=${config.roundsNumber}&availableCourts=${config.availableCourts}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${bearerToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(peopleToTeams(people)),
-      },
+    createTournament(
+      bearerToken || "",
+      config.tournamentName,
+      config.selectedTournament,
+      dateStart,
+      config.roundsNumber,
+      config.availableCourts,
+      peopleToTeams(people),
     )
       .then((response) => {
         if (response.ok) {

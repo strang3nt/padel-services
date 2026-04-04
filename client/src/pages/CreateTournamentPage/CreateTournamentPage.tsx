@@ -11,6 +11,7 @@ import FormControl from "@mui/material/FormControl";
 import { Page } from "@/components/Page";
 import { getMatchesPerTeam } from "./rodeoTournament";
 import { getMatchesPerPerson } from "./singlePlayerRodeoTournament";
+import { TournamentType } from "@/api/tournament";
 
 export const CreateTournamentPage: FC = () => {
   return (
@@ -23,11 +24,12 @@ export const CreateTournamentPage: FC = () => {
 };
 
 export interface TournamentSetupData {
+  tournamentName: string;
   availableCourts: number;
   roundsNumber: number;
   tournamentDate: string;
   numberOfTeams: number;
-  selectedTournament: string;
+  selectedTournament: TournamentType;
 }
 
 interface TournamentParamsProps {
@@ -88,11 +90,12 @@ const TournamentParams: React.FC<TournamentParamsProps> = ({
 
 export const ChooseTournamentType: FC = () => {
   const [formData, setFormData] = useState<TournamentSetupData>({
+    tournamentName: "",
     availableCourts: 0,
     roundsNumber: 0,
     tournamentDate: "",
     numberOfTeams: 0,
-    selectedTournament: "Rodeo",
+    selectedTournament: TournamentType.Rodeo,
   });
   const navigate = useNavigate();
 
@@ -102,7 +105,7 @@ export const ChooseTournamentType: FC = () => {
 
   const renderSwitch = (): React.ReactNode => {
     switch (formData.selectedTournament) {
-      case "Rodeo": {
+      case TournamentType.Rodeo: {
         return (
           <>
             <TournamentParams
@@ -137,7 +140,7 @@ export const ChooseTournamentType: FC = () => {
         );
       }
 
-      case "SinglePlayerRodeo": {
+      case TournamentType.SinglePlayerRodeo: {
         return (
           <>
             <TournamentParams
@@ -186,6 +189,20 @@ export const ChooseTournamentType: FC = () => {
           gap: 2,
         }}
       >
+        <TextField
+          label="Event's name"
+          name="eventName"
+          type="text"
+          slotProps={{ inputLabel: { shrink: true } }}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              tournamentName: e.target.value,
+            })
+          }
+          required
+        />
+
         <FormControl>
           <InputLabel id="tournament-label">Tournament type</InputLabel>
           <Select
@@ -197,8 +214,10 @@ export const ChooseTournamentType: FC = () => {
               setFormData({ ...formData, selectedTournament: e.target.value })
             }
           >
-            <MenuItem value={"Rodeo"}>Rodeo</MenuItem>
-            <MenuItem value={"SinglePlayerRodeo"}>Single Player Rodeo</MenuItem>
+            <MenuItem value={TournamentType.Rodeo}>Rodeo</MenuItem>
+            <MenuItem value={TournamentType.SinglePlayerRodeo}>
+              Single Player Rodeo
+            </MenuItem>
           </Select>
         </FormControl>
         <TextField

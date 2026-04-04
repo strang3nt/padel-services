@@ -10,11 +10,13 @@ import (
 )
 
 type RodeoFactory struct {
+	Name            string
 	MaxRounds       int
 	AvailableCourts int
 }
 
 func (rf *RodeoFactory) GetFirstValidTournament(
+	name string,
 	timeout time.Duration,
 	count int,
 	teams []Team,
@@ -29,7 +31,7 @@ func (rf *RodeoFactory) GetFirstValidTournament(
 	for i := range count {
 		go func(id int) {
 
-			rodeo, err := rf.MakeTournament(ctx, teams, start)
+			rodeo, err := rf.MakeTournament(ctx, name, teams, start)
 			if err == nil && rodeo != nil {
 				select {
 				case resultChan <- rodeo:
@@ -50,6 +52,7 @@ func (rf *RodeoFactory) GetFirstValidTournament(
 
 func (rf *RodeoFactory) MakeTournament(
 	ctx context.Context,
+	name string,
 	teams []Team,
 	dateStart time.Time) (*Rodeo, error) {
 	n := len(teams)
@@ -128,7 +131,7 @@ func (rf *RodeoFactory) MakeTournament(
 		turns = append(turns, Round{matches})
 	}
 
-	return NewRodeo("Rodeo", dateStart, teams, turns), nil
+	return NewRodeo(name, dateStart, teams, turns), nil
 }
 
 func (rf *RodeoFactory) getGraph(teams []Team, matchesPerTeam int) (Graph, []Team) {

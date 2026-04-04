@@ -122,7 +122,7 @@ func main() {
 
 		protected.GET("/tournaments", func(c *gin.Context) {
 			dateString := c.Query("date")
-			date, _ := time.Parse("2006-01-02", dateString)
+			date, _ := time.Parse(time.RFC3339Nano, dateString)
 			userIdBlob, _ := c.Get("user_id")
 			userId := userIdBlob.(float64)
 
@@ -137,6 +137,7 @@ func main() {
 
 		protected.POST("/create-tournament", func(c *gin.Context) {
 			log.Println("create tournament handler called")
+			tournamentName := c.Query("eventName")
 			tournamentType := c.Query("tournamentType")
 			dateStart, _ := time.Parse(time.RFC3339, c.Query("dateStart"))
 			totalRounds, _ := strconv.ParseInt(c.Query("totalRounds"), 10, 32)
@@ -158,6 +159,7 @@ func main() {
 			)
 
 			tournament := services.CreateTournament(
+				tournamentName,
 				tournamentType,
 				dateStart,
 				teams,

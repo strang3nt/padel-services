@@ -9,12 +9,14 @@ import (
 )
 
 type SinglePlayerRodeoFactory struct {
+	Name            string
 	MaxRounds       int
 	AvailableCourts int
 	People          map[Person]any
 }
 
 func (rf *SinglePlayerRodeoFactory) GetFirstValidTournament(
+	name string,
 	timeout time.Duration,
 	count int,
 	start time.Time,
@@ -28,7 +30,7 @@ func (rf *SinglePlayerRodeoFactory) GetFirstValidTournament(
 	for i := range count {
 		go func(id int) {
 
-			rodeo, err := rf.MakeTournament(ctx, start)
+			rodeo, err := rf.MakeTournament(ctx, name, start)
 			if err == nil && rodeo != nil {
 				select {
 				case resultChan <- rodeo:
@@ -49,6 +51,7 @@ func (rf *SinglePlayerRodeoFactory) GetFirstValidTournament(
 
 func (rf *SinglePlayerRodeoFactory) MakeTournament(
 	ctx context.Context,
+	name string,
 	dateStart time.Time) (*SinglePlayerRodeo, error) {
 	n := len(rf.People)
 	nodes := make([]int, n)
@@ -127,7 +130,7 @@ func (rf *SinglePlayerRodeoFactory) MakeTournament(
 	}
 
 	singlePlayerRodeo := MakeSinglePlayerRodeo(
-		"Single Player Rodeo",
+		name,
 		dateStart,
 		teams,
 		turns,

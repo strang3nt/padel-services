@@ -15,10 +15,11 @@ import (
 type tournamentNameType struct {
 	TournamentId   int64
 	TournamentType string
+	TournamentName string
 }
 
 const tournamentsByDate = `
-SELECT tournament.id, tournament_type.name
+SELECT tournament.id, tournament_type.name, tournament.event_name
 FROM tournament
 JOIN tournament_type ON tournament.tournament_type_id=tournament_type.id
 JOIN users ON tournament.user_id=users.id
@@ -104,7 +105,7 @@ func GetTournamentsByDate(
 		tournaments = append(
 			tournaments,
 			buildTournamentData(
-				id.TournamentType,
+				id.TournamentName,
 				tournamentDate,
 				matches,
 				teams,

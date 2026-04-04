@@ -7,8 +7,8 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Section from "@/components/Section";
-import { Tournaments } from "@/pages/tournament";
-
+import { Tournaments } from "@/api/tournament";
+import retrieveTournament from "@/api/retrieveTournament";
 interface FormData {
   date: string;
 }
@@ -25,9 +25,10 @@ export const RetrieveTournamentPage: FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/tournaments?date=${formData.date}`, {
-        headers: { Authorization: `Bearer ${bearerToken}` },
-      });
+      const response = await retrieveTournament(
+        bearerToken || "",
+        new Date(formData.date),
+      );
 
       const result = (await response.json()) as Tournaments;
       if (response.ok) {

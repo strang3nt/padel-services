@@ -11,6 +11,7 @@ import (
 )
 
 func CreateTournament(
+	tournamentName string,
 	tournamentType string,
 	dateStart time.Time,
 	teams []tournament.Team,
@@ -25,6 +26,7 @@ func CreateTournament(
 		}
 
 		rodeoInstance, err := rodeo_factory.GetFirstValidTournament(
+			tournamentName,
 			10*time.Second,
 			runtime.NumCPU(),
 			teams,
@@ -54,6 +56,7 @@ func CreateTournament(
 		}
 
 		rodeoInstance, err := rodeo_factory.GetFirstValidTournament(
+			tournamentName,
 			10*time.Second,
 			runtime.NumCPU(),
 			dateStart,

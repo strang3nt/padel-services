@@ -197,13 +197,6 @@ func FromTournamentToTemplateData(tournament tournament.Tournament) TemplateData
 		}
 
 		resting := tournament.GetResting(roundIndex, "-")
-		log.Printf(
-			"tournament %v, date %v, round %v, resting %v",
-			tournament.GetName(),
-			tournament.GetDateStart(),
-			roundIndex,
-			resting,
-		)
 
 		rounds = append(rounds, Round{
 			RoundNumber: roundIndex + 1,
