@@ -1,5 +1,5 @@
 import { type FC, useState } from "react";
-import { TournamentData, Tournaments } from "./RetrieveTournamentPage";
+import { TournamentData, Tournaments } from "@/api/tournament";
 import { Page } from "@/components/Page.tsx";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
